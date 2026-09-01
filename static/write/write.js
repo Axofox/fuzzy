@@ -211,6 +211,10 @@
     publishBtn.disabled = true;
     publishBtn.textContent = "Publishing…";
 
+    // Only upload images still referenced in the text — if a pasted image's
+    // markdown line got edited or deleted, don't ship the file anyway.
+    const referencedImages = state.images.filter((img) => markdown.includes(img.filename));
+
     try {
       const res = await fetch("/.netlify/functions/create-paste", {
         method: "POST",
@@ -218,7 +222,7 @@
         body: JSON.stringify({
           markdown,
           slug: rawSlug || undefined,
-          images: state.images,
+          images: referencedImages,
         }),
       });
       const data = await res.json();
