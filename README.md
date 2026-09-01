@@ -1,4 +1,4 @@
-# notes-tool
+# fuzzy
 
 A tiny, self-hosted rentry.co-style tool: write a Markdown note (bold, italic,
 images, emoji), publish it, and get a read-only link. Built to run entirely
