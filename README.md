@@ -8,6 +8,9 @@ straight into this git repo.
 ## How it works
 
 - `/write` — the editor. No login (see "Security" below).
+- `/write/manage` — lists every published note with a delete button. Deleting
+  removes the paste's files from the repo (same commit-then-rebuild flow as
+  publishing), so it disappears from the live site on the next rebuild.
 - Publishing calls a Netlify Function which commits `pastes/{slug}/content.md`,
   any images, and `pastes/{slug}/meta.json` to this repo via the GitHub API.
 - That commit triggers a normal Netlify build: `scripts/build.js` reads every

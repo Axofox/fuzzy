@@ -35,6 +35,22 @@ main {
 }
 h1 { font-size: 20px; margin: 0 0 16px; }
 
+.manage-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.manage-header h1 { margin-bottom: 0; }
+.back-link {
+  color: var(--link);
+  font-size: 14px;
+  text-decoration: none;
+}
+.back-link:hover { text-decoration: underline; }
+
 .toolbar {
   display: flex;
   gap: 6px;

@@ -1,6 +1,6 @@
 const { test, beforeEach, afterEach } = require("node:test");
 const assert = require("node:assert/strict");
-const { getConfig, getFile, putFile } = require("../netlify/functions/lib/github");
+const { getConfig, getFile, putFile, getFileContent, listDir, deleteFile } = require("../netlify/functions/lib/github");
 
 const ENV_KEYS = ["GITHUB_TOKEN", "GITHUB_OWNER", "GITHUB_REPO", "GITHUB_BRANCH"];
 let savedEnv;
@@ -93,4 +93,85 @@ test("putFile sends the branch and base64 content, and rejects on failure", asyn
 
   global.fetch = async () => ({ ok: false, text: async () => "conflict" });
   await assert.rejects(() => putFile("pastes/x/content.md", "aGVsbG8=", "add content"), /conflict/);
+});
+
+test("getFileContent decodes base64 file content", async () => {
+  process.env.GITHUB_TOKEN = "t";
+  process.env.GITHUB_OWNER = "o";
+  process.env.GITHUB_REPO = "r";
+  process.env.GITHUB_BRANCH = "main";
+  global.fetch = async () => ({
+    status: 200,
+    ok: true,
+    json: async () => ({ sha: "abc", content: Buffer.from('{"slug":"x"}').toString("base64") }),
+  });
+
+  const result = await getFileContent("pastes/x/meta.json");
+  assert.equal(result.exists, true);
+  assert.equal(result.content, '{"slug":"x"}');
+});
+
+test("getFileContent returns exists:false on a 404", async () => {
+  process.env.GITHUB_TOKEN = "t";
+  process.env.GITHUB_OWNER = "o";
+  process.env.GITHUB_REPO = "r";
+  process.env.GITHUB_BRANCH = "main";
+  global.fetch = async () => ({ status: 404, ok: false });
+
+  assert.deepEqual(await getFileContent("pastes/nope/meta.json"), { exists: false });
+});
+
+test("getFileContent throws when the path is a directory", async () => {
+  process.env.GITHUB_TOKEN = "t";
+  process.env.GITHUB_OWNER = "o";
+  process.env.GITHUB_REPO = "r";
+  process.env.GITHUB_BRANCH = "main";
+  global.fetch = async () => ({ status: 200, ok: true, json: async () => [{ name: "a" }] });
+
+  await assert.rejects(() => getFileContent("pastes"), /directory/);
+});
+
+test("listDir returns [] on a 404", async () => {
+  process.env.GITHUB_TOKEN = "t";
+  process.env.GITHUB_OWNER = "o";
+  process.env.GITHUB_REPO = "r";
+  process.env.GITHUB_BRANCH = "main";
+  global.fetch = async () => ({ status: 404, ok: false });
+
+  assert.deepEqual(await listDir("pastes/nope"), []);
+});
+
+test("listDir returns the directory's entries", async () => {
+  process.env.GITHUB_TOKEN = "t";
+  process.env.GITHUB_OWNER = "o";
+  process.env.GITHUB_REPO = "r";
+  process.env.GITHUB_BRANCH = "main";
+  const entries = [{ name: "content.md", path: "pastes/x/content.md", sha: "s1", type: "file" }];
+  global.fetch = async () => ({ status: 200, ok: true, json: async () => entries });
+
+  assert.deepEqual(await listDir("pastes/x"), entries);
+});
+
+test("deleteFile sends sha/branch/message and rejects on failure", async () => {
+  process.env.GITHUB_TOKEN = "t";
+  process.env.GITHUB_OWNER = "o";
+  process.env.GITHUB_REPO = "r";
+  process.env.GITHUB_BRANCH = "main";
+
+  let capturedBody;
+  let capturedMethod;
+  global.fetch = async (url, opts) => {
+    capturedMethod = opts.method;
+    capturedBody = JSON.parse(opts.body);
+    return { ok: true, json: async () => ({}) };
+  };
+
+  await deleteFile("pastes/x/content.md", "sha123", "delete content");
+  assert.equal(capturedMethod, "DELETE");
+  assert.equal(capturedBody.sha, "sha123");
+  assert.equal(capturedBody.branch, "main");
+  assert.equal(capturedBody.message, "delete content");
+
+  global.fetch = async () => ({ ok: false, text: async () => "not found" });
+  await assert.rejects(() => deleteFile("pastes/x/content.md", "sha123", "delete content"), /not found/);
 });
