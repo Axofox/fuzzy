@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Write a note</title>
+<link rel="stylesheet" href="write.css">
+</head>
+<body>
+<main>
+  <h1>Write a note</h1>
+
+  <div class="toolbar">
+    <button type="button" id="btn-bold" title="Bold"><b>B</b></button>
+    <button type="button" id="btn-italic" title="Italic"><i>I</i></button>
+    <button type="button" id="btn-emoji" title="Insert emoji">🙂</button>
+    <button type="button" id="btn-image" title="Insert image">🖼️</button>
+    <input type="file" id="file-input" accept="image/png,image/jpeg,image/gif,image/webp" multiple hidden>
+  </div>
+
+  <div id="emoji-panel" class="emoji-panel hidden">
+    <input type="text" id="emoji-search" placeholder="Search emoji…">
+    <div id="emoji-grid" class="emoji-grid"></div>
+  </div>
+
+  <textarea id="editor" placeholder="Write your note here. Drag & drop or paste screenshots directly in."></textarea>
+  <p class="hint">Drag &amp; drop images here, or paste a screenshot straight from your clipboard.</p>
+
+  <div class="thumbs" id="thumbs"></div>
+
+  <div class="publish-row">
+    <div class="slug-field">
+      <span class="slug-prefix" id="slug-prefix">yoursite.netlify.app/</span>
+      <input type="text" id="slug-input" placeholder="custom-link (optional)">
+    </div>
+    <div id="slug-status" class="slug-status"></div>
+  </div>
+
+  <button type="button" id="btn-publish" class="publish-btn">Publish</button>
+
+  <div id="result" class="result hidden"></div>
+  <div id="error" class="error hidden"></div>
+</main>
+<script src="emoji-data.js"></script>
+<script src="write.js"></script>
+</body>
+</html>

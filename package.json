@@ -1,0 +1,13 @@
+{
+  "name": "notes-tool",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A simple rentry-style note publishing tool: write Markdown notes with images and emoji, publish them to a read-only link.",
+  "scripts": {
+    "build": "node scripts/build.js"
+  },
+  "dependencies": {
+    "marked": "^12.0.2",
+    "sanitize-html": "^2.13.0"
+  }
+}
