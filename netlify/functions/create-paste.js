@@ -1,11 +1,11 @@
 const { getFile, putFile } = require("./lib/github");
 const { normalizeSlug, isValidSlug, randomToken } = require("./lib/slug");
+const { sanitizeFilename, base64Size } = require("./lib/paste-input");
 
 const MAX_MARKDOWN_CHARS = 200_000;
 const MAX_IMAGES = 12;
 const MAX_IMAGE_BYTES = 3 * 1024 * 1024; // per image, decoded
 const MAX_TOTAL_IMAGE_BYTES = 4 * 1024 * 1024; // combined, decoded
-const ALLOWED_EXT = new Set(["png", "jpg", "jpeg", "gif", "webp"]);
 
 function json(statusCode, obj) {
   return {
@@ -13,24 +13,6 @@ function json(statusCode, obj) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(obj),
   };
-}
-
-function sanitizeFilename(name, index) {
-  const lower = String(name || `image-${index}`).toLowerCase();
-  const base = lower.split(/[\\/]/).pop();
-  const dot = base.lastIndexOf(".");
-  const ext = dot >= 0 ? base.slice(dot + 1) : "";
-  const stem = (dot >= 0 ? base.slice(0, dot) : base)
-    .replace(/[^a-z0-9._-]/g, "-")
-    .replace(/-+/g, "-")
-    .slice(0, 60) || `image-${index}`;
-  const safeExt = ALLOWED_EXT.has(ext) ? ext : null;
-  return safeExt ? `${stem}.${safeExt}` : null;
-}
-
-function base64Size(b64) {
-  const clean = b64.replace(/=+$/, "");
-  return Math.floor((clean.length * 3) / 4);
 }
 
 exports.handler = async (event) => {

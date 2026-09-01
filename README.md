@@ -80,7 +80,14 @@ existing ones or touch anything else in the repo). Two things worth knowing:
 ```bash
 npm install
 npm run build   # renders pastes/ -> public/
+npm test        # unit tests (Node's built-in test runner, no extra deps)
 ```
+
+Tests cover the pure logic: slug validation/generation, Markdown rendering +
+HTML sanitization (including XSS attempts), image filename sanitization, and
+the GitHub API wrapper (mocked, no real network calls). They don't cover the
+Netlify Function handlers end-to-end or the browser-side `write.js` — those
+are exercised manually via `/write`.
 
 There's no local dev server for the write flow since it depends on the
 GitHub API + a real Netlify Function environment — use `netlify dev` (from
