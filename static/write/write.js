@@ -15,6 +15,11 @@
   const publishBtn = document.getElementById("btn-publish");
   const resultBox = document.getElementById("result");
   const errorBox = document.getElementById("error");
+  const tabWrite = document.getElementById("tab-write");
+  const tabPreview = document.getElementById("tab-preview");
+  const writePane = document.getElementById("write-pane");
+  const previewPane = document.getElementById("preview-pane");
+  const heading = document.querySelector("h1");
 
   slugPrefix.textContent = location.host + "/";
 
@@ -22,6 +27,9 @@
     images: [], // { filename, dataBase64 }
     lastSlugCheck: { slug: null, available: null },
   };
+
+  const editSlug = new URLSearchParams(location.search).get("edit");
+  const editMode = !!editSlug;
 
   // ---- selection helpers -------------------------------------------------
 
@@ -34,19 +42,30 @@
     editor.focus();
   }
 
-  function wrapSelection(marker) {
+  function wrapSelectionTags(open, close) {
     const start = editor.selectionStart;
     const end = editor.selectionEnd;
     const selected = editor.value.slice(start, end) || "text";
     const before = editor.value.slice(0, start);
     const after = editor.value.slice(end);
-    editor.value = before + marker + selected + marker + after;
+    editor.value = before + open + selected + close + after;
     editor.focus();
-    editor.setSelectionRange(start + marker.length, start + marker.length + selected.length);
+    editor.setSelectionRange(start + open.length, start + open.length + selected.length);
+  }
+
+  function wrapSelection(marker) {
+    wrapSelectionTags(marker, marker);
   }
 
   btnBold.addEventListener("click", () => wrapSelection("**"));
   btnItalic.addEventListener("click", () => wrapSelection("*"));
+
+  document.querySelectorAll(".color-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const color = btn.dataset.color;
+      wrapSelectionTags(`[${color}]`, `[/${color}]`);
+    });
+  });
 
   // ---- emoji picker -------------------------------------------------------
 
@@ -94,15 +113,67 @@
       .slice(0, 40) || "image";
   }
 
-  function addImageFile(file) {
+  // ---- image compression ---------------------------------------------------
+  // Screenshots (especially retina PNGs) are often several MB. Downscale and
+  // re-encode as JPEG before upload so publishing stays fast and small.
+
+  const COMPRESS_MAX_DIMENSION = 1920;
+  const COMPRESS_THRESHOLD_BYTES = 300 * 1024;
+  const COMPRESS_JPEG_QUALITY = 0.85;
+
+  function loadImageElement(file) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => resolve({ img, url });
+      img.onerror = reject;
+      img.src = url;
+    });
+  }
+
+  async function compressImageFile(file) {
+    // Leave GIFs alone (a canvas re-encode would drop animation) and skip
+    // files that are already small enough that compressing isn't worth it.
+    if (file.type === "image/gif" || file.size <= COMPRESS_THRESHOLD_BYTES) {
+      return file;
+    }
+    let url;
+    try {
+      const loaded = await loadImageElement(file);
+      url = loaded.url;
+      const { img } = loaded;
+      const scale = Math.min(1, COMPRESS_MAX_DIMENSION / Math.max(img.width, img.height));
+      const width = Math.round(img.width * scale);
+      const height = Math.round(img.height * scale);
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", COMPRESS_JPEG_QUALITY));
+      if (!blob || blob.size >= file.size) return file;
+      return blob;
+    } catch {
+      return file;
+    } finally {
+      if (url) URL.revokeObjectURL(url);
+    }
+  }
+
+  async function addImageFile(file) {
     if (!file.type.startsWith("image/")) return;
+    const originalName = file.name;
+    const originalIsPlaceholder = !originalName || originalName === "image.png";
+    const compressed = await compressImageFile(file);
+
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = reader.result;
       const base64 = dataUrl.split(",")[1];
-      const ext = extFromMime(file.type);
-      const base = file.name && file.name !== "image.png"
-        ? sanitizeBaseName(file.name)
+      const ext = extFromMime(compressed.type);
+      const base = !originalIsPlaceholder
+        ? sanitizeBaseName(originalName)
         : "screenshot-" + Date.now();
       const filename = `${base}.${ext}`;
 
@@ -114,7 +185,7 @@
       thumb.title = filename;
       thumbs.appendChild(thumb);
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(compressed);
   }
 
   btnImage.addEventListener("click", () => fileInput.click());
@@ -149,6 +220,79 @@
     }
     if (handled) e.preventDefault();
   });
+
+  // ---- write/preview tabs --------------------------------------------------
+  // Preview is rendered server-side (same renderer + sanitizer as the real
+  // published pages) so it never drifts from what actually gets published.
+
+  const MIME_BY_EXT = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", gif: "image/gif", webp: "image/webp" };
+  function mimeFromFilename(name) {
+    const ext = name.split(".").pop().toLowerCase();
+    return MIME_BY_EXT[ext] || "image/png";
+  }
+
+  // Not-yet-published images only exist client-side as base64, so swap their
+  // src for a data: URL to make the preview show them before they're uploaded.
+  function resolvePreviewImages(html) {
+    const container = document.createElement("div");
+    container.innerHTML = html;
+    container.querySelectorAll("img").forEach((img) => {
+      const match = (img.getAttribute("src") || "").match(/^images\/(.+)$/);
+      const found = match && state.images.find((i) => i.filename === match[1]);
+      if (found) {
+        img.src = `data:${mimeFromFilename(found.filename)};base64,${found.dataBase64}`;
+      }
+    });
+    return container.innerHTML;
+  }
+
+  let previewCache = { markdown: null, html: null };
+
+  async function showPreview() {
+    tabWrite.classList.remove("active");
+    tabPreview.classList.add("active");
+    writePane.classList.add("hidden");
+    previewPane.classList.remove("hidden");
+
+    const markdown = editor.value;
+    if (!markdown.trim()) {
+      previewPane.innerHTML = '<p class="hint">Nothing to preview yet.</p>';
+      return;
+    }
+    if (previewCache.markdown === markdown) {
+      previewPane.innerHTML = previewCache.html;
+      return;
+    }
+    previewPane.innerHTML = '<p class="hint">Rendering…</p>';
+    try {
+      const res = await fetch("/.netlify/functions/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ markdown }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        previewPane.innerHTML = `<p class="hint">${data.message || "Preview failed."}</p>`;
+        return;
+      }
+      const resolved = resolvePreviewImages(data.html);
+      previewCache = { markdown, html: resolved };
+      previewPane.innerHTML = resolved;
+    } catch (err) {
+      previewPane.innerHTML = `<p class="hint">Network error: ${err.message}</p>`;
+    }
+  }
+
+  function showWrite() {
+    tabPreview.classList.remove("active");
+    tabWrite.classList.add("active");
+    previewPane.classList.add("hidden");
+    writePane.classList.remove("hidden");
+    editor.focus();
+  }
+
+  tabWrite.addEventListener("click", showWrite);
+  tabPreview.addEventListener("click", showPreview);
 
   // ---- slug availability ---------------------------------------------------
 
@@ -209,7 +353,7 @@
     }
 
     publishBtn.disabled = true;
-    publishBtn.textContent = "Publishing…";
+    publishBtn.textContent = editMode ? "Saving…" : "Publishing…";
 
     // Only upload images still referenced in the text — if a pasted image's
     // markdown line got edited or deleted, don't ship the file anyway.
@@ -223,6 +367,7 @@
           markdown,
           slug: rawSlug || undefined,
           images: referencedImages,
+          overwrite: editMode,
         }),
       });
       const data = await res.json();
@@ -251,7 +396,7 @@
         copyBtn.textContent = "Copied!";
         setTimeout(() => (copyBtn.textContent = "Copy"), 1500);
       });
-      resultBox.appendChild(document.createTextNode("Published: "));
+      resultBox.appendChild(document.createTextNode(editMode ? "Saved: " : "Published: "));
       resultBox.appendChild(link);
       resultBox.appendChild(copyBtn);
       const note = document.createElement("div");
@@ -265,10 +410,43 @@
       showError("Network error: " + err.message);
     } finally {
       publishBtn.disabled = false;
-      publishBtn.textContent = "Publish";
+      publishBtn.textContent = editMode ? "Save changes" : "Publish";
       updatePublishState();
     }
   });
+
+  // ---- edit mode -------------------------------------------------------
+
+  async function initEditMode(slug) {
+    heading.textContent = "Edit note";
+    publishBtn.textContent = "Save changes";
+    slugInput.value = slug;
+    slugInput.disabled = true;
+    slugStatus.textContent = "Editing an existing note — its link can't be changed here.";
+    slugStatus.className = "slug-status";
+
+    editor.disabled = true;
+    editor.value = "Loading…";
+    try {
+      const res = await fetch(`/.netlify/functions/get-paste?slug=${encodeURIComponent(slug)}`);
+      const data = await res.json();
+      if (!res.ok) {
+        editor.value = "";
+        showError(data.message || "Couldn't load this note.");
+        return;
+      }
+      editor.value = data.markdown;
+    } catch (err) {
+      editor.value = "";
+      showError("Network error: " + err.message);
+    } finally {
+      editor.disabled = false;
+    }
+  }
+
+  if (editMode) {
+    initEditMode(editSlug);
+  }
 
   function showError(message) {
     errorBox.textContent = message;

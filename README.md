@@ -8,11 +8,13 @@ straight into this git repo.
 ## How it works
 
 - `/write` — the editor. No login (see "Security" below).
-- `/write/manage` — lists every published note with a delete button. Deleting
-  removes the paste's files from the repo (same commit-then-rebuild flow as
-  publishing), so it disappears from the live site on the next rebuild.
+- `/write/manage` — lists every published note with **Edit** and **Delete**
+  buttons. Both go through the same commit-then-rebuild flow as publishing,
+  so changes take ~30-90s to show up live.
 - Publishing calls a Netlify Function which commits `pastes/{slug}/content.md`,
   any images, and `pastes/{slug}/meta.json` to this repo via the GitHub API.
+  Editing an existing note updates those same files in place (preserving the
+  original `createdAt`, adding `updatedAt`) instead of creating new ones.
 - That commit triggers a normal Netlify build: `scripts/build.js` reads every
   folder under `pastes/` and renders it to a static page in `public/{slug}/`.
 - Readers just hit `https://yoursite.netlify.app/{slug}` — a plain static
@@ -20,6 +22,30 @@ straight into this git repo.
 - A link is either a random 8-character token, or a custom slug you type in
   (rejected up front, with a message, if that slug is already taken —
   nothing is ever silently overwritten).
+- **Preview** tab on `/write` renders through the exact same Markdown
+  renderer + sanitizer used for the real published page (via a small
+  `/preview` function), so what you see is what you get — including
+  pasted-but-not-yet-uploaded images, shown from local data URLs.
+- Screenshots are downscaled and re-encoded as JPEG client-side before
+  upload if they're over ~300KB, so retina screenshots don't bloat the repo
+  or slow down publishing.
+
+## Formatting
+
+Besides standard Markdown (headings, lists, links, code blocks, `**bold**`,
+`*italic*`), there's one custom bit of syntax for colored text, available via
+the 4 colored dots in the toolbar or by typing it directly:
+
+```
+[green]this is green[/green]
+[yellow]this is yellow[/yellow]
+[red]this is red[/red]
+[purple]this is purple[/purple]
+```
+
+Only those 4 color names are recognized; anything else (`[blue]...[/blue]`)
+is left as literal text. Markdown inside a color tag still works, e.g.
+`[red]**bold and red**[/red]`.
 
 Because publishing goes through a real git commit + rebuild, a new note takes
 roughly 30–90 seconds to go live, not instant.
@@ -56,13 +82,12 @@ roughly 30–90 seconds to go live, not instant.
 
 ## Security note
 
-The write page has **no password**, by design (per your call — low blast
-radius since it only ever creates new notes, it can't edit or delete
-existing ones or touch anything else in the repo). Two things worth knowing:
+Neither `/write` nor `/write/manage` has a password, by design (per your
+call). Two things worth knowing:
 
-- Anyone who finds the `/write` URL can publish a note under your GitHub
-  token's identity. Keep the URL out of anything public if that matters to
-  you.
+- Anyone who finds those URLs can publish, edit, or delete notes under your
+  GitHub token's identity. Keep the URLs out of anything public if that
+  matters to you.
 - If you ever want to lock it down without much effort, Netlify's
   **Visitor access** password-protects the *whole* site, or you can add an
   [Edge Function](https://docs.netlify.com/edge-functions/overview/) that
@@ -72,7 +97,9 @@ existing ones or touch anything else in the repo). Two things worth knowing:
 
 - ~200,000 characters of Markdown per note.
 - Up to 12 images per note, 3MB each, 4MB combined (keeps requests under
-  Netlify's function payload limit). PNG, JPG, GIF, WEBP only.
+  Netlify's function payload limit) — measured *after* client-side
+  compression, so most screenshots have a lot of headroom. PNG, JPG, GIF,
+  WEBP only.
 - Emoji: the picker inserts real Unicode emoji characters — they render in
   each reader's own system font (Apple's artwork on Mac/iPhone/iPad, each
   other platform's own style elsewhere), the same way iMessage or Mail does.
@@ -87,10 +114,12 @@ npm test        # unit tests (Node's built-in test runner, no extra deps)
 ```
 
 Tests cover the pure logic: slug validation/generation, Markdown rendering +
-HTML sanitization (including XSS attempts), image filename sanitization, and
-the GitHub API wrapper (mocked, no real network calls). They don't cover the
-Netlify Function handlers end-to-end or the browser-side `write.js` — those
-are exercised manually via `/write`.
+HTML sanitization (including XSS attempts and the `[color]` tag syntax),
+image filename sanitization, the GitHub API wrapper (mocked, no real network
+calls), and the `create-paste` handler's create vs. edit (overwrite) logic
+(also mocked). They don't cover image compression or the rest of the
+browser-side `write.js`/`manage.js` — those are exercised manually via
+`/write` and `/write/manage`.
 
 There's no local dev server for the write flow since it depends on the
 GitHub API + a real Netlify Function environment — use `netlify dev` (from

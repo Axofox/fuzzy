@@ -61,3 +61,33 @@ test("renderMarkdown adds rel/target to links", () => {
   assert.match(html, /rel="noopener noreferrer nofollow"/);
   assert.match(html, /target="_blank"/);
 });
+
+test("renderMarkdown turns [color]...[/color] into a colored span for all 4 colors", () => {
+  for (const color of ["green", "yellow", "red", "purple"]) {
+    const html = renderMarkdown(`[${color}]hi[/${color}]`);
+    assert.match(html, new RegExp(`<span class="text-${color}">hi</span>`));
+  }
+});
+
+test("renderMarkdown supports markdown nested inside a color tag", () => {
+  const html = renderMarkdown("[red]**bold red**[/red]");
+  assert.match(html, /<span class="text-red"><strong>bold red<\/strong><\/span>/);
+});
+
+test("renderMarkdown leaves an unclosed color tag as literal text", () => {
+  const html = renderMarkdown("[purple]unclosed");
+  assert.match(html, /\[purple\]unclosed/);
+  assert.doesNotMatch(html, /<span/);
+});
+
+test("renderMarkdown strips disallowed classes/attributes from a raw <span>", () => {
+  const html = renderMarkdown('<span class="evil" onclick="alert(1)">x</span>');
+  assert.doesNotMatch(html, /evil/);
+  assert.doesNotMatch(html, /onclick/);
+});
+
+test("renderMarkdown does not recognize an unknown color name as a tag", () => {
+  const html = renderMarkdown("[blue]not a real color[/blue]");
+  assert.doesNotMatch(html, /<span/);
+  assert.match(html, /\[blue\]not a real color\[\/blue\]/);
+});

@@ -14,6 +14,10 @@
     --border: #e5e7eb;
     --code-bg: #f3f4f6;
     --link: #2563eb;
+    --green: #16a34a;
+    --yellow: #b45309;
+    --red: #dc2626;
+    --purple: #9333ea;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -23,6 +27,10 @@
       --border: #2a2b32;
       --code-bg: #1d1e24;
       --link: #7db4ff;
+      --green: #4ade80;
+      --yellow: #facc15;
+      --red: #f87171;
+      --purple: #c084fc;
     }
   }
   * { box-sizing: border-box; }
@@ -36,7 +44,16 @@
     background: var(--bg);
     color: var(--fg);
     font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    /* Light text on a dark background can visually read as "too bold" on
+       some displays; this keeps regular vs. bold text clearly distinct. */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+  strong, b { font-weight: 600; }
+  .text-green { color: var(--green); }
+  .text-yellow { color: var(--yellow); }
+  .text-red { color: var(--red); }
+  .text-purple { color: var(--purple); }
   main {
     max-width: 720px;
     margin: 0 auto;

@@ -35,6 +35,11 @@
 
     const actions = document.createElement("div");
     actions.className = "paste-actions";
+    const editLink = document.createElement("a");
+    editLink.href = `/write?edit=${encodeURIComponent(paste.slug)}`;
+    editLink.className = "edit-link";
+    editLink.textContent = "Edit";
+    actions.appendChild(editLink);
     const delBtn = document.createElement("button");
     delBtn.type = "button";
     delBtn.className = "delete-btn";

@@ -1,4 +1,4 @@
-const { getFile, putFile } = require("./lib/github");
+const { getFile, getFileContent, putFile, listDir } = require("./lib/github");
 const { normalizeSlug, isValidSlug, randomToken } = require("./lib/slug");
 const { sanitizeFilename, base64Size } = require("./lib/paste-input");
 
@@ -102,8 +102,23 @@ exports.handler = async (event) => {
     slug = rawSlug;
   }
 
+  const overwrite = payload.overwrite === true;
+  if (overwrite && !customSlugRequested) {
+    return json(400, { error: "invalid_request", message: "Editing requires a link." });
+  }
+
   try {
-    if (customSlugRequested) {
+    let existingMeta = null; // { sha, content } -- set only when editing
+    let existingContentSha;
+
+    if (overwrite) {
+      existingMeta = await getFileContent(`pastes/${slug}/meta.json`);
+      if (!existingMeta.exists) {
+        return json(404, { error: "not_found", message: "This note doesn't exist to edit." });
+      }
+      const contentFile = await getFile(`pastes/${slug}/content.md`);
+      existingContentSha = contentFile.sha;
+    } else if (customSlugRequested) {
       const existing = await getFile(`pastes/${slug}/meta.json`);
       if (existing.exists) {
         return json(409, {
@@ -134,26 +149,45 @@ exports.handler = async (event) => {
     await putFile(
       `pastes/${slug}/content.md`,
       Buffer.from(markdown, "utf8").toString("base64"),
-      `${commitTag} add content`
+      `${commitTag} ${overwrite ? "update" : "add"} content`,
+      existingContentSha
     );
 
     for (const img of images) {
+      const existingImg = await getFile(`pastes/${slug}/images/${img.filename}`);
       await putFile(
         `pastes/${slug}/images/${img.filename}`,
         img.dataBase64,
-        `${commitTag} add image ${img.filename}`
+        `${commitTag} add image ${img.filename}`,
+        existingImg.exists ? existingImg.sha : undefined
       );
+    }
+
+    // Count all images currently in the paste's folder (not just the ones
+    // uploaded in this request), so editing and adding one more image
+    // doesn't make imageCount regress to just the new upload.
+    const allImages = await listDir(`pastes/${slug}/images`);
+
+    let createdAt = new Date().toISOString();
+    if (existingMeta) {
+      try {
+        createdAt = JSON.parse(existingMeta.content).createdAt || createdAt;
+      } catch {
+        // malformed existing meta.json; fall back to "now"
+      }
     }
 
     const meta = {
       slug,
-      createdAt: new Date().toISOString(),
-      imageCount: images.length,
+      createdAt,
+      ...(overwrite ? { updatedAt: new Date().toISOString() } : {}),
+      imageCount: allImages.length,
     };
     await putFile(
       `pastes/${slug}/meta.json`,
       Buffer.from(JSON.stringify(meta, null, 2), "utf8").toString("base64"),
-      `${commitTag} publish`
+      `${commitTag} ${overwrite ? "update" : "publish"}`,
+      existingMeta ? existingMeta.sha : undefined
     );
 
     const siteUrl = process.env.URL || process.env.DEPLOY_PRIME_URL || "";
