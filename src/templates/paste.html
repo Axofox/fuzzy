@@ -100,18 +100,6 @@
     padding: 0 20px 40px;
     color: var(--muted);
     font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .lang-picker {
-    font-size: 12px;
-    color: var(--muted);
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 2px 6px;
   }
 </style>
 </head>
@@ -119,10 +107,6 @@
 <main>
 {{CONTENT}}
 </main>
-<footer>
-  <span data-i18n="readOnlyNote">Read-only note</span> &middot; <code>/{{SLUG}}</code> &middot; <span data-i18n="poweredBy">Powered by Life from AWU</span>
-  <select class="lang-picker" aria-label="Language"></select>
-</footer>
-<script src="/i18n.js"></script>
+<footer>Read-only note &middot; <code>/{{SLUG}}</code> &middot; Powered by Life from AWU</footer>
 </body>
 </html>

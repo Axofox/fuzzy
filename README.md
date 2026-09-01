@@ -29,12 +29,6 @@ straight into this git repo.
 - Screenshots are downscaled and re-encoded as JPEG client-side before
   upload if they're over ~300KB, so retina screenshots don't bloat the repo
   or slow down publishing.
-- A language picker (top-right on every page) translates the tool's own UI
-  chrome — buttons, labels, the footer, the 404 page — into English, Spanish,
-  French or German. Your choice is remembered per-browser via localStorage.
-  **Note content itself is never translated** — this only affects the tool's
-  own interface, not what you write. Server-generated error messages (from
-  the Netlify Functions) also stay in English.
 
 ## Formatting
 
@@ -122,10 +116,9 @@ npm test        # unit tests (Node's built-in test runner, no extra deps)
 Tests cover the pure logic: slug validation/generation, Markdown rendering +
 HTML sanitization (including XSS attempts and the `[color]` tag syntax),
 image filename sanitization, the GitHub API wrapper (mocked, no real network
-calls), the `create-paste` handler's create vs. edit (overwrite) logic (also
-mocked), and the i18n dictionary (all 4 languages have the same key set, no
-typos left one untranslated). They don't cover image compression or the rest
-of the browser-side `write.js`/`manage.js` — those are exercised manually via
+calls), and the `create-paste` handler's create vs. edit (overwrite) logic
+(also mocked). They don't cover image compression or the rest of the
+browser-side `write.js`/`manage.js` — those are exercised manually via
 `/write` and `/write/manage`.
 
 There's no local dev server for the write flow since it depends on the
