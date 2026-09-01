@@ -22,6 +22,12 @@
   }
 }
 * { box-sizing: border-box; }
+html, body {
+  /* Stops the page from feeling "floaty" on a long press: disables
+     pinch/double-tap zoom while leaving normal scrolling and the
+     textarea's own text selection untouched. */
+  touch-action: manipulation;
+}
 body {
   margin: 0;
   background: var(--bg);
@@ -138,6 +144,9 @@ textarea#editor.dragover { border-color: var(--link); }
   object-fit: cover;
   border-radius: 6px;
   border: 1px solid var(--border);
+  -webkit-user-drag: none;
+  user-drag: none;
+  -webkit-touch-callout: none;
 }
 
 .publish-row {

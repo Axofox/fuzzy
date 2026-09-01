@@ -26,6 +26,11 @@
     }
   }
   * { box-sizing: border-box; }
+  html, body {
+    /* Stops the page from feeling "floaty" on a long press: disables
+       pinch/double-tap zoom while leaving normal scrolling untouched. */
+    touch-action: manipulation;
+  }
   body {
     margin: 0;
     background: var(--bg);
@@ -44,6 +49,9 @@
     max-width: 100%;
     height: auto;
     border-radius: 8px;
+    -webkit-user-drag: none;
+    user-drag: none;
+    -webkit-touch-callout: none;
     display: block;
     margin: 1em 0;
   }
