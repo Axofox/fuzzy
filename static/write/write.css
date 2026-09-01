@@ -56,12 +56,26 @@ h1 { font-size: 20px; margin: 0 0 16px; }
   margin-bottom: 16px;
 }
 .manage-header h1 { margin-bottom: 0; }
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 .back-link {
   color: var(--link);
   font-size: 14px;
   text-decoration: none;
 }
 .back-link:hover { text-decoration: underline; }
+.lang-picker {
+  font-size: 13px;
+  color: var(--muted);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 6px;
+  cursor: pointer;
+}
 
 .tabs {
   display: flex;

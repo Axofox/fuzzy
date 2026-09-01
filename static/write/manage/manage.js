@@ -1,9 +1,12 @@
 (function () {
   const statusEl = document.getElementById("status");
   const listEl = document.getElementById("list");
+  const t = window.FuzzyI18n.t;
+
+  statusEl.textContent = t("loadingNotes");
 
   function formatDate(iso) {
-    if (!iso) return "unknown date";
+    if (!iso) return t("unknownDate");
     try {
       return new Date(iso).toLocaleString();
     } catch {
@@ -38,12 +41,12 @@
     const editLink = document.createElement("a");
     editLink.href = `/write?edit=${encodeURIComponent(paste.slug)}`;
     editLink.className = "edit-link";
-    editLink.textContent = "Edit";
+    editLink.textContent = t("editLink");
     actions.appendChild(editLink);
     const delBtn = document.createElement("button");
     delBtn.type = "button";
     delBtn.className = "delete-btn";
-    delBtn.textContent = "Delete";
+    delBtn.textContent = t("deleteBtn");
     delBtn.addEventListener("click", () => onDelete(paste.slug, li, delBtn));
     actions.appendChild(delBtn);
 
@@ -53,11 +56,11 @@
   }
 
   async function onDelete(slug, row, btn) {
-    if (!confirm(`Delete "/${slug}"? This removes it from the live site (still recoverable from git history if needed).`)) {
+    if (!confirm(t("deleteConfirm").replace("{slug}", slug))) {
       return;
     }
     btn.disabled = true;
-    btn.textContent = "Deleting…";
+    btn.textContent = t("deletingBtn");
     row.classList.add("removing");
 
     try {
@@ -68,21 +71,21 @@
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.message || "Delete failed.");
+        alert(data.message || t("deleteFailed"));
         btn.disabled = false;
-        btn.textContent = "Delete";
+        btn.textContent = t("deleteBtn");
         row.classList.remove("removing");
         return;
       }
       row.remove();
       if (!listEl.children.length) {
-        statusEl.textContent = "No notes published yet.";
+        statusEl.textContent = t("noNotesYet");
         statusEl.classList.remove("hidden");
       }
     } catch (err) {
       alert("Network error: " + err.message);
       btn.disabled = false;
-      btn.textContent = "Delete";
+      btn.textContent = t("deleteBtn");
       row.classList.remove("removing");
     }
   }
@@ -92,11 +95,11 @@
       const res = await fetch("/.netlify/functions/list-pastes");
       const data = await res.json();
       if (!res.ok) {
-        statusEl.textContent = data.message || "Couldn't load notes.";
+        statusEl.textContent = data.message || t("couldNotLoadNotes");
         return;
       }
       if (!data.pastes.length) {
-        statusEl.textContent = "No notes published yet.";
+        statusEl.textContent = t("noNotesYet");
         return;
       }
       statusEl.classList.add("hidden");

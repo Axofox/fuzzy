@@ -11,13 +11,17 @@
 <body>
 <main>
   <div class="manage-header">
-    <h1>Manage notes</h1>
-    <a href="/write" class="back-link">&larr; Write a new note</a>
+    <h1 data-i18n="manageNotesHeading">Manage notes</h1>
+    <div class="header-controls">
+      <a href="/write" class="back-link" data-i18n="backToWrite">&larr; Write a new note</a>
+      <select class="lang-picker" aria-label="Language"></select>
+    </div>
   </div>
 
   <div id="status" class="hint">Loading…</div>
   <ul id="list" class="paste-list"></ul>
 </main>
+<script src="/i18n.js"></script>
 <script src="manage.js"></script>
 </body>
 </html>

@@ -19,7 +19,8 @@
   const tabPreview = document.getElementById("tab-preview");
   const writePane = document.getElementById("write-pane");
   const previewPane = document.getElementById("preview-pane");
-  const heading = document.querySelector("h1");
+  const heading = document.getElementById("page-heading");
+  const t = window.FuzzyI18n.t;
 
   slugPrefix.textContent = location.host + "/";
 
@@ -30,6 +31,18 @@
 
   const editSlug = new URLSearchParams(location.search).get("edit");
   const editMode = !!editSlug;
+
+  // These two are also mutated dynamically during publish/save, so they're
+  // deliberately not driven by [data-i18n] -- that would fight with the
+  // in-flight state text ("Publishing…" etc).
+  function renderStaticI18nText() {
+    heading.textContent = editMode ? t("editNote") : t("writeANote");
+    if (!publishBtn.disabled) {
+      publishBtn.textContent = editMode ? t("saveChangesBtn") : t("publishBtn");
+    }
+  }
+  renderStaticI18nText();
+  document.addEventListener("fuzzy:langchange", renderStaticI18nText);
 
   // ---- selection helpers -------------------------------------------------
 
@@ -272,7 +285,7 @@
       });
       const data = await res.json();
       if (!res.ok) {
-        previewPane.innerHTML = `<p class="hint">${data.message || "Preview failed."}</p>`;
+        previewPane.innerHTML = `<p class="hint">${data.message || t("previewFailed")}</p>`;
         return;
       }
       const resolved = resolvePreviewImages(data.html);
@@ -301,13 +314,13 @@
     clearTimeout(slugTimer);
     const raw = slugInput.value.trim();
     if (!raw) {
-      slugStatus.textContent = "A random link will be generated.";
+      slugStatus.textContent = t("randomLinkNote");
       slugStatus.className = "slug-status";
       state.lastSlugCheck = { slug: null, available: null };
       updatePublishState();
       return;
     }
-    slugStatus.textContent = "Checking…";
+    slugStatus.textContent = t("checkingSlug");
     slugStatus.className = "slug-status";
     slugTimer = setTimeout(async () => {
       try {
@@ -315,14 +328,14 @@
         const data = await res.json();
         state.lastSlugCheck = { slug: raw, available: data.available };
         if (data.available) {
-          slugStatus.textContent = "✓ Available";
+          slugStatus.textContent = t("slugAvailable");
           slugStatus.className = "slug-status ok";
         } else {
-          slugStatus.textContent = data.message || "This link already exists — please choose a different one.";
+          slugStatus.textContent = data.message || t("slugTakenMessage");
           slugStatus.className = "slug-status bad";
         }
       } catch {
-        slugStatus.textContent = "Couldn't check availability — you can still try publishing.";
+        slugStatus.textContent = t("slugCheckFailed");
         slugStatus.className = "slug-status";
       }
       updatePublishState();
@@ -343,17 +356,17 @@
 
     const markdown = editor.value;
     if (!markdown.trim()) {
-      showError("Write something first.");
+      showError(t("writeSomethingFirst"));
       return;
     }
     const rawSlug = slugInput.value.trim();
     if (rawSlug && state.lastSlugCheck.slug === rawSlug && state.lastSlugCheck.available === false) {
-      showError("This link already exists — please choose a different one.");
+      showError(t("slugTakenMessage"));
       return;
     }
 
     publishBtn.disabled = true;
-    publishBtn.textContent = editMode ? "Saving…" : "Publishing…";
+    publishBtn.textContent = editMode ? t("savingBtn") : t("publishingBtn");
 
     // Only upload images still referenced in the text — if a pasted image's
     // markdown line got edited or deleted, don't ship the file anyway.
@@ -378,7 +391,7 @@
           slugStatus.className = "slug-status bad";
           state.lastSlugCheck = { slug: rawSlug, available: false };
         }
-        showError(data.message || "Something went wrong.");
+        showError(data.message || t("somethingWrong"));
         return;
       }
 
@@ -390,27 +403,27 @@
       link.textContent = data.url;
       const copyBtn = document.createElement("button");
       copyBtn.type = "button";
-      copyBtn.textContent = "Copy";
+      copyBtn.textContent = t("copyBtn");
       copyBtn.addEventListener("click", () => {
         navigator.clipboard.writeText(data.url);
-        copyBtn.textContent = "Copied!";
-        setTimeout(() => (copyBtn.textContent = "Copy"), 1500);
+        copyBtn.textContent = t("copiedBtn");
+        setTimeout(() => (copyBtn.textContent = t("copyBtn")), 1500);
       });
-      resultBox.appendChild(document.createTextNode(editMode ? "Saved: " : "Published: "));
+      resultBox.appendChild(document.createTextNode(editMode ? t("savedPrefix") : t("publishedPrefix")));
       resultBox.appendChild(link);
       resultBox.appendChild(copyBtn);
       const note = document.createElement("div");
       note.style.marginTop = "6px";
       note.style.color = "var(--muted)";
       note.style.fontSize = "13px";
-      note.textContent = "Note: it can take up to a minute to go live while the site rebuilds.";
+      note.textContent = t("rebuildNote");
       resultBox.appendChild(note);
       resultBox.classList.remove("hidden");
     } catch (err) {
       showError("Network error: " + err.message);
     } finally {
       publishBtn.disabled = false;
-      publishBtn.textContent = editMode ? "Save changes" : "Publish";
+      publishBtn.textContent = editMode ? t("saveChangesBtn") : t("publishBtn");
       updatePublishState();
     }
   });
@@ -418,21 +431,21 @@
   // ---- edit mode -------------------------------------------------------
 
   async function initEditMode(slug) {
-    heading.textContent = "Edit note";
-    publishBtn.textContent = "Save changes";
+    heading.textContent = t("editNote");
+    publishBtn.textContent = t("saveChangesBtn");
     slugInput.value = slug;
     slugInput.disabled = true;
-    slugStatus.textContent = "Editing an existing note — its link can't be changed here.";
+    slugStatus.textContent = t("editingNote");
     slugStatus.className = "slug-status";
 
     editor.disabled = true;
-    editor.value = "Loading…";
+    editor.value = t("loadingNote");
     try {
       const res = await fetch(`/.netlify/functions/get-paste?slug=${encodeURIComponent(slug)}`);
       const data = await res.json();
       if (!res.ok) {
         editor.value = "";
-        showError(data.message || "Couldn't load this note.");
+        showError(data.message || t("couldNotLoadNote"));
         return;
       }
       editor.value = data.markdown;
