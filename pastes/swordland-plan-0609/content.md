@@ -2,22 +2,22 @@
 
 **Know your colour before we start.**
 
-### 💛 GOLD — Strike (2 players)
+[yellow]GOLD — Strike (2 players)[/yellow]
 1. Pebble
 2. TATSAWESUM
 
 Roaming pair. Take a building, break the enemy hold, take the loot, move on. 
 We just want to be a pain in the ass for others :D
 
-### 💜 PURPLE — Hold Royal Stables, then Sanctum
+[purple]PURPLE — Hold Royal Stables, then Sanctum[/purple]
 - Rally leader: EirikurRaudi
 - Joiners: _____
 
-### 💙 BLUE — Hold Bell Tower, then Sanctum
+BLUE — Hold Bell Tower, then Sanctum
 - Rally leader: Edy
 - Joiners: _____
 
-### 💚 GREEN — Hold Abbeys
+[green]GREEN — Hold Abbeys[/green]
 - Rally leader: Tyson
 - Joiners: _____
 
