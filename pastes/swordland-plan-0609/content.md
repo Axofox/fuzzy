@@ -11,7 +11,7 @@ We just want to be a pain in the ass for others :D
 
 [purple]PURPLE [/purple] — Hold Royal Stables, then Sanctum
 - Rally leader: EirikurRaudi
--  8 Joiners: [purple]Iliana, Bars, 개미병장, zahra aleskafi, Guess hoo, Nanss,   Luetti, NAMAN, [/purple] 
+-  8 Joiners: [purple]Iliana, Bars, 개미병장, Life, Guess hoo, Nanss,   Luetti, NAMAN, [/purple] 
  
 
 [blue]BLUE[/blue]  — Hold Bell Tower, then Sanctum
