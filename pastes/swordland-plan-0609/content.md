@@ -18,7 +18,7 @@ We just want to be a pain in the ass for others :D
 - Rally leader: Edy
 -  8 Joiners: [blue]MTM, FearsomeKbab, MICK3006, Mnt, EniViciVokke, TieWaster, TheKing, Seralg, [/blue]
 
-[green]GREEN [/green] — Hold Abbeys, then move on to Swordshrine when it openes
+[green]GREEN [/green] — Hold Abbeys
 - Rally leader: Tyson
 -  8 Joiners: [green]Injal, A 7, Gothel Ajus, REIS 34, Silva, CaliaDoris, Zovitsh,  Lord sk, [/green]
 
