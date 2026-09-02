@@ -25,8 +25,8 @@ function deriveTitle(markdown) {
 
 // Small custom syntax for colored text: [green]text[/green]. Not part of
 // Markdown, so it's expanded to <span class="text-green"> before marked
-// runs, and sanitize-html only allows the exact 4 known class names through.
-const COLOR_NAMES = ["green", "yellow", "red", "purple"];
+// runs, and sanitize-html only allows the exact known class names through.
+const COLOR_NAMES = ["green", "yellow", "red", "purple", "blue"];
 
 function applyColorTags(markdown) {
   let out = markdown;

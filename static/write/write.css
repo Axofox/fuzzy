@@ -10,6 +10,7 @@
   --bad: #dc2626;
   --yellow: #b45309;
   --purple: #9333ea;
+  --blue: #0284c7;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -23,6 +24,7 @@
     --bad: #f87171;
     --yellow: #facc15;
     --purple: #c084fc;
+    --blue: #38bdf8;
   }
 }
 * { box-sizing: border-box; }
@@ -102,6 +104,7 @@ h1 { font-size: 20px; margin: 0 0 16px; }
 .preview-pane .text-yellow { color: var(--yellow); }
 .preview-pane .text-red { color: var(--bad); }
 .preview-pane .text-purple { color: var(--purple); }
+.preview-pane .text-blue { color: var(--blue); }
 .preview-pane img { max-width: 100%; height: auto; border-radius: 8px; display: block; margin: 1em 0; }
 .preview-pane code { background: var(--bg); padding: 0.15em 0.4em; border-radius: 4px; font-size: 0.9em; }
 .preview-pane pre { background: var(--bg); padding: 14px 16px; border-radius: 8px; overflow-x: auto; }

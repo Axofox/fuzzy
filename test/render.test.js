@@ -62,8 +62,8 @@ test("renderMarkdown adds rel/target to links", () => {
   assert.match(html, /target="_blank"/);
 });
 
-test("renderMarkdown turns [color]...[/color] into a colored span for all 4 colors", () => {
-  for (const color of ["green", "yellow", "red", "purple"]) {
+test("renderMarkdown turns [color]...[/color] into a colored span for all 5 colors", () => {
+  for (const color of ["green", "yellow", "red", "purple", "blue"]) {
     const html = renderMarkdown(`[${color}]hi[/${color}]`);
     assert.match(html, new RegExp(`<span class="text-${color}">hi</span>`));
   }
@@ -87,7 +87,7 @@ test("renderMarkdown strips disallowed classes/attributes from a raw <span>", ()
 });
 
 test("renderMarkdown does not recognize an unknown color name as a tag", () => {
-  const html = renderMarkdown("[blue]not a real color[/blue]");
+  const html = renderMarkdown("[orange]not a real color[/orange]");
   assert.doesNotMatch(html, /<span/);
-  assert.match(html, /\[blue\]not a real color\[\/blue\]/);
+  assert.match(html, /\[orange\]not a real color\[\/orange\]/);
 });

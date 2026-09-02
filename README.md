@@ -54,16 +54,17 @@ from yourself, that needs a fully separate GitHub repo + Netlify site.
 
 Besides standard Markdown (headings, lists, links, code blocks, `**bold**`,
 `*italic*`), there's one custom bit of syntax for colored text, available via
-the 4 colored dots in the toolbar or by typing it directly:
+the 5 colored dots in the toolbar or by typing it directly:
 
 ```
 [green]this is green[/green]
 [yellow]this is yellow[/yellow]
 [red]this is red[/red]
 [purple]this is purple[/purple]
+[blue]this is blue[/blue]
 ```
 
-Only those 4 color names are recognized; anything else (`[blue]...[/blue]`)
+Only those 5 color names are recognized; anything else (`[orange]...[/orange]`)
 is left as literal text. Markdown inside a color tag still works, e.g.
 `[red]**bold and red**[/red]`.
 
