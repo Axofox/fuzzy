@@ -1,6 +1,7 @@
 const { getFile, getFileContent, putFile, listDir } = require("./lib/github");
 const { normalizeSlug, isValidSlug, randomToken } = require("./lib/slug");
 const { sanitizeFilename, base64Size } = require("./lib/paste-input");
+const { resolveWorkspace } = require("./lib/workspace");
 
 const MAX_MARKDOWN_CHARS = 200_000;
 const MAX_IMAGES = 12;
@@ -87,6 +88,12 @@ exports.handler = async (event) => {
     images.push({ filename: unique, dataBase64 });
   }
 
+  const ws = resolveWorkspace(payload.workspace);
+  if (!ws.ok) {
+    return json(400, { error: "invalid_workspace", message: ws.message });
+  }
+  const { workspace, pastesRoot } = ws;
+
   // Resolve the slug: either the caller-supplied custom link, or a random token.
   let slug;
   let customSlugRequested = false;
@@ -112,14 +119,14 @@ exports.handler = async (event) => {
     let existingContentSha;
 
     if (overwrite) {
-      existingMeta = await getFileContent(`pastes/${slug}/meta.json`);
+      existingMeta = await getFileContent(`${pastesRoot}/${slug}/meta.json`);
       if (!existingMeta.exists) {
         return json(404, { error: "not_found", message: "This note doesn't exist to edit." });
       }
-      const contentFile = await getFile(`pastes/${slug}/content.md`);
+      const contentFile = await getFile(`${pastesRoot}/${slug}/content.md`);
       existingContentSha = contentFile.sha;
     } else if (customSlugRequested) {
-      const existing = await getFile(`pastes/${slug}/meta.json`);
+      const existing = await getFile(`${pastesRoot}/${slug}/meta.json`);
       if (existing.exists) {
         return json(409, {
           error: "slug_taken",
@@ -130,7 +137,7 @@ exports.handler = async (event) => {
       // Generate a random token, retrying on the (very unlikely) collision.
       for (let attempt = 0; attempt < 5; attempt++) {
         const candidate = randomToken(8);
-        const existing = await getFile(`pastes/${candidate}/meta.json`);
+        const existing = await getFile(`${pastesRoot}/${candidate}/meta.json`);
         if (!existing.exists) {
           slug = candidate;
           break;
@@ -141,22 +148,22 @@ exports.handler = async (event) => {
       }
     }
 
-    const commitTag = `[paste ${slug}]`;
+    const commitTag = workspace ? `[paste ${workspace}/${slug}]` : `[paste ${slug}]`;
 
     // Commit content + images first; meta.json last, so build.js (which
     // requires meta.json to consider a paste "published") never picks up a
     // partially-written paste if something fails midway.
     await putFile(
-      `pastes/${slug}/content.md`,
+      `${pastesRoot}/${slug}/content.md`,
       Buffer.from(markdown, "utf8").toString("base64"),
       `${commitTag} ${overwrite ? "update" : "add"} content`,
       existingContentSha
     );
 
     for (const img of images) {
-      const existingImg = await getFile(`pastes/${slug}/images/${img.filename}`);
+      const existingImg = await getFile(`${pastesRoot}/${slug}/images/${img.filename}`);
       await putFile(
-        `pastes/${slug}/images/${img.filename}`,
+        `${pastesRoot}/${slug}/images/${img.filename}`,
         img.dataBase64,
         `${commitTag} add image ${img.filename}`,
         existingImg.exists ? existingImg.sha : undefined
@@ -166,7 +173,7 @@ exports.handler = async (event) => {
     // Count all images currently in the paste's folder (not just the ones
     // uploaded in this request), so editing and adding one more image
     // doesn't make imageCount regress to just the new upload.
-    const allImages = await listDir(`pastes/${slug}/images`);
+    const allImages = await listDir(`${pastesRoot}/${slug}/images`);
 
     let createdAt = new Date().toISOString();
     if (existingMeta) {
@@ -184,16 +191,17 @@ exports.handler = async (event) => {
       imageCount: allImages.length,
     };
     await putFile(
-      `pastes/${slug}/meta.json`,
+      `${pastesRoot}/${slug}/meta.json`,
       Buffer.from(JSON.stringify(meta, null, 2), "utf8").toString("base64"),
       `${commitTag} ${overwrite ? "update" : "publish"}`,
       existingMeta ? existingMeta.sha : undefined
     );
 
     const siteUrl = process.env.URL || process.env.DEPLOY_PRIME_URL || "";
+    const path = workspace ? `${workspace}/${slug}` : slug;
     return json(200, {
       slug,
-      url: siteUrl ? `${siteUrl.replace(/\/$/, "")}/${slug}` : `/${slug}`,
+      url: siteUrl ? `${siteUrl.replace(/\/$/, "")}/${path}` : `/${path}`,
     });
   } catch (err) {
     return json(500, {

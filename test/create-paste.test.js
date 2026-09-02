@@ -135,3 +135,54 @@ test("create (non-overwrite) does not send a sha for content.md or meta.json", a
   assert.equal(savedMeta.updatedAt, undefined);
   assert.equal(savedMeta.imageCount, 0);
 });
+
+test("rejects an invalid workspace name without calling GitHub", async () => {
+  global.fetch = async () => {
+    throw new Error("fetch should not be called");
+  };
+  const res = await post({ markdown: "hello", slug: "hello-note", workspace: "x" });
+  assert.equal(res.statusCode, 400);
+  assert.equal(JSON.parse(res.body).error, "invalid_workspace");
+});
+
+test("a workspace scopes the storage path and the returned URL", async () => {
+  const puts = [];
+  const gets = [];
+  global.fetch = async (url, opts) => {
+    const method = (opts && opts.method) || "GET";
+    gets.push(url);
+    if (method === "GET" && url.includes("/meta.json")) return { status: 404, ok: false };
+    if (method === "GET" && url.includes("/images")) return { status: 404, ok: false };
+    if (method === "PUT") {
+      puts.push({ url, body: JSON.parse(opts.body) });
+      return { ok: true, json: async () => ({}) };
+    }
+    throw new Error("unexpected fetch: " + method + " " + url);
+  };
+
+  process.env.URL = "https://example.netlify.app";
+  const res = await post({ markdown: "hi", slug: "hello", workspace: "katy", images: [] });
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  assert.equal(body.url, "https://example.netlify.app/katy/hello");
+
+  // Every path touched must live under pastes/katy/, never bare pastes/hello.
+  for (const url of [...gets, ...puts.map((p) => p.url)]) {
+    assert.match(url, /\/contents\/pastes\/katy\/hello/);
+  }
+});
+
+test("two workspaces can use the same slug independently (no cross-workspace collision)", async () => {
+  // "taken-in-katy" only exists under pastes/katy/ -- the same slug in the
+  // default (unscoped) workspace must not be reported as taken.
+  global.fetch = async (url, opts) => {
+    const method = (opts && opts.method) || "GET";
+    if (method === "PUT") return { ok: true, json: async () => ({}) };
+    if (url.includes("pastes/katy/taken-in-katy")) {
+      return { status: 200, ok: true, json: async () => ({ sha: "x" }) };
+    }
+    return { status: 404, ok: false };
+  };
+  const res = await post({ markdown: "hello", slug: "taken-in-katy", images: [] });
+  assert.equal(res.statusCode, 200);
+});

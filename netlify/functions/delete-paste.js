@@ -1,5 +1,6 @@
 const { listDir, deleteFile } = require("./lib/github");
 const { normalizeSlug, isValidSlug } = require("./lib/slug");
+const { resolveWorkspace } = require("./lib/workspace");
 
 function json(statusCode, obj) {
   return {
@@ -25,9 +26,13 @@ exports.handler = async (event) => {
   if (!slug || !isValidSlug(slug)) {
     return json(400, { error: "invalid_slug", message: "Invalid link." });
   }
+  const ws = resolveWorkspace(payload.workspace);
+  if (!ws.ok) {
+    return json(400, { error: "invalid_workspace", message: ws.message });
+  }
 
   try {
-    const topLevel = await listDir(`pastes/${slug}`);
+    const topLevel = await listDir(`${ws.pastesRoot}/${slug}`);
     if (topLevel.length === 0) {
       return json(404, { error: "not_found", message: "This note doesn't exist." });
     }

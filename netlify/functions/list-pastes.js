@@ -1,4 +1,5 @@
 const { listDir, getFileContent } = require("./lib/github");
+const { resolveWorkspace } = require("./lib/workspace");
 
 function json(statusCode, obj) {
   return {
@@ -13,12 +14,21 @@ exports.handler = async (event) => {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
 
+  const ws = resolveWorkspace(event.queryStringParameters && event.queryStringParameters.workspace);
+  if (!ws.ok) {
+    return json(400, { error: "invalid_workspace", message: ws.message });
+  }
+
   try {
-    const dirs = (await listDir("pastes")).filter((e) => e.type === "dir");
+    // A workspace folder itself has no meta.json directly under `pastes/`,
+    // only its notes do (at pastes/{workspace}/{slug}/meta.json) -- so
+    // listing the default (unscoped) root naturally skips workspace folders
+    // without any extra filtering.
+    const dirs = (await listDir(ws.pastesRoot)).filter((e) => e.type === "dir");
 
     const items = await Promise.all(
       dirs.map(async (d) => {
-        const meta = await getFileContent(`pastes/${d.name}/meta.json`);
+        const meta = await getFileContent(`${ws.pastesRoot}/${d.name}/meta.json`);
         // No meta.json means a publish that never finished (or was deleted
         // mid-way) -- build.js skips these too, so hide them here as well.
         if (!meta.exists) return null;

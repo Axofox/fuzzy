@@ -1,5 +1,6 @@
 const { getFileContent } = require("./lib/github");
 const { normalizeSlug, isValidSlug } = require("./lib/slug");
+const { resolveWorkspace } = require("./lib/workspace");
 
 function json(statusCode, obj) {
   return {
@@ -15,13 +16,18 @@ exports.handler = async (event) => {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
 
-  const slug = normalizeSlug(event.queryStringParameters && event.queryStringParameters.slug);
+  const params = event.queryStringParameters || {};
+  const slug = normalizeSlug(params.slug);
   if (!slug || !isValidSlug(slug)) {
     return json(400, { error: "invalid_slug", message: "Invalid link." });
   }
+  const ws = resolveWorkspace(params.workspace);
+  if (!ws.ok) {
+    return json(400, { error: "invalid_workspace", message: ws.message });
+  }
 
   try {
-    const content = await getFileContent(`pastes/${slug}/content.md`);
+    const content = await getFileContent(`${ws.pastesRoot}/${slug}/content.md`);
     if (!content.exists) {
       return json(404, { error: "not_found", message: "This note doesn't exist." });
     }

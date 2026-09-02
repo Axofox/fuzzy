@@ -1,13 +1,14 @@
 const { getFile } = require("./lib/github");
 const { normalizeSlug, isValidSlug } = require("./lib/slug");
+const { resolveWorkspace } = require("./lib/workspace");
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "GET") {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
 
-  const raw = event.queryStringParameters && event.queryStringParameters.slug;
-  const slug = normalizeSlug(raw);
+  const params = event.queryStringParameters || {};
+  const slug = normalizeSlug(params.slug);
 
   if (!slug || !isValidSlug(slug)) {
     return {
@@ -21,9 +22,17 @@ exports.handler = async (event) => {
       }),
     };
   }
+  const ws = resolveWorkspace(params.workspace);
+  if (!ws.ok) {
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ available: false, reason: "invalid", message: ws.message }),
+    };
+  }
 
   try {
-    const result = await getFile(`pastes/${slug}/meta.json`);
+    const result = await getFile(`${ws.pastesRoot}/${slug}/meta.json`);
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },

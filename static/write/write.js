@@ -20,8 +20,19 @@
   const writePane = document.getElementById("write-pane");
   const previewPane = document.getElementById("preview-pane");
   const heading = document.querySelector("h1");
+  const manageLink = document.getElementById("manage-link");
 
-  slugPrefix.textContent = location.host + "/";
+  // A workspace is an optional "/{name}" prefix (e.g. /katy/write) that
+  // keeps a separate set of notes, with its own manage page, isolated from
+  // the default one. Netlify rewrites /{workspace}/write to this same page
+  // without changing the URL bar, so the workspace is read back out of it.
+  const workspaceMatch = location.pathname.match(/^\/([a-z0-9-]+)\/write\/?$/);
+  const workspace = workspaceMatch ? workspaceMatch[1] : null;
+
+  slugPrefix.textContent = location.host + "/" + (workspace ? workspace + "/" : "");
+  if (workspace) {
+    manageLink.href = `/${workspace}/write/manage`;
+  }
 
   const state = {
     images: [], // { filename, dataBase64 }
@@ -311,7 +322,8 @@
     slugStatus.className = "slug-status";
     slugTimer = setTimeout(async () => {
       try {
-        const res = await fetch(`/.netlify/functions/check-slug?slug=${encodeURIComponent(raw)}`);
+        const wsParam = workspace ? `&workspace=${encodeURIComponent(workspace)}` : "";
+        const res = await fetch(`/.netlify/functions/check-slug?slug=${encodeURIComponent(raw)}${wsParam}`);
         const data = await res.json();
         state.lastSlugCheck = { slug: raw, available: data.available };
         if (data.available) {
@@ -366,6 +378,7 @@
         body: JSON.stringify({
           markdown,
           slug: rawSlug || undefined,
+          workspace: workspace || undefined,
           images: referencedImages,
           overwrite: editMode,
         }),
@@ -428,7 +441,8 @@
     editor.disabled = true;
     editor.value = "Loading…";
     try {
-      const res = await fetch(`/.netlify/functions/get-paste?slug=${encodeURIComponent(slug)}`);
+      const wsParam = workspace ? `&workspace=${encodeURIComponent(workspace)}` : "";
+      const res = await fetch(`/.netlify/functions/get-paste?slug=${encodeURIComponent(slug)}${wsParam}`);
       const data = await res.json();
       if (!res.ok) {
         editor.value = "";

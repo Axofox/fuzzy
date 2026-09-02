@@ -30,6 +30,26 @@ straight into this git repo.
   upload if they're over ~300KB, so retina screenshots don't bloat the repo
   or slow down publishing.
 
+## Workspaces
+
+`/write` and `/write/manage` are the default, unscoped workspace. You can
+also give someone a link like `/katy/write` — any `/{name}/write` URL works,
+with no setup step. It behaves like a separate instance of the tool:
+
+- Its notes live at `pastes/{name}/` in the repo instead of bare `pastes/`,
+  and publish to `/{name}/{slug}` instead of `/{slug}`.
+- `/{name}/write/manage` only ever lists and can only ever edit/delete that
+  workspace's own notes.
+- Someone using only the `/{name}/write` link has no way, through the tool
+  itself, to discover or reach the default workspace or any other named one.
+
+**What this isn't**: real secrecy from you. Every workspace's notes still
+land in the same GitHub repo under your account — anyone with access to that
+repo (starting with you) can see all of them by browsing `pastes/` directly.
+The isolation is at the tool's UI level, keeping workspaces separate from
+*each other*, not from the repo owner. If you need a workspace hidden even
+from yourself, that needs a fully separate GitHub repo + Netlify site.
+
 ## Formatting
 
 Besides standard Markdown (headings, lists, links, code blocks, `**bold**`,
@@ -113,13 +133,14 @@ npm run build   # renders pastes/ -> public/
 npm test        # unit tests (Node's built-in test runner, no extra deps)
 ```
 
-Tests cover the pure logic: slug validation/generation, Markdown rendering +
-HTML sanitization (including XSS attempts and the `[color]` tag syntax),
-image filename sanitization, the GitHub API wrapper (mocked, no real network
-calls), and the `create-paste` handler's create vs. edit (overwrite) logic
-(also mocked). They don't cover image compression or the rest of the
-browser-side `write.js`/`manage.js` — those are exercised manually via
-`/write` and `/write/manage`.
+Tests cover the pure logic: slug validation/generation, workspace name
+resolution, Markdown rendering + HTML sanitization (including XSS attempts
+and the `[color]` tag syntax), image filename sanitization, the GitHub API
+wrapper (mocked, no real network calls), and the `create-paste` handler's
+create vs. edit (overwrite) logic and workspace scoping (also mocked). They
+don't cover image compression or the rest of the browser-side
+`write.js`/`manage.js` — those are exercised manually via `/write` and
+`/write/manage`.
 
 There's no local dev server for the write flow since it depends on the
 GitHub API + a real Netlify Function environment — use `netlify dev` (from

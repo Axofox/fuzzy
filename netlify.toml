@@ -8,5 +8,18 @@
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
 
+# Workspaces: /{workspace}/write and /{workspace}/write/manage serve the
+# same static write/manage pages (URL bar keeps the workspace prefix; the
+# page's own JS reads it back out of location.pathname).
+[[redirects]]
+  from = "/:workspace/write/manage"
+  to = "/write/manage/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/:workspace/write"
+  to = "/write/index.html"
+  status = 200
+
 # Netlify automatically serves /404.html (in the publish dir) for any
 # unmatched path, so no explicit redirect rule is needed for that.

@@ -1,6 +1,16 @@
 (function () {
   const statusEl = document.getElementById("status");
   const listEl = document.getElementById("list");
+  const writeLink = document.getElementById("write-link");
+
+  // Same workspace-detection as write.js: /{workspace}/write/manage is
+  // rewritten to this page without changing the URL bar.
+  const workspaceMatch = location.pathname.match(/^\/([a-z0-9-]+)\/write\/manage\/?$/);
+  const workspace = workspaceMatch ? workspaceMatch[1] : null;
+  const prefix = workspace ? `/${workspace}` : "";
+  if (workspace) {
+    writeLink.href = `${prefix}/write`;
+  }
 
   function formatDate(iso) {
     if (!iso) return "unknown date";
@@ -20,11 +30,11 @@
     info.className = "paste-info";
 
     const link = document.createElement("a");
-    link.href = `/${paste.slug}`;
+    link.href = `${prefix}/${paste.slug}`;
     link.target = "_blank";
     link.rel = "noopener";
     link.className = "paste-slug";
-    link.textContent = `/${paste.slug}`;
+    link.textContent = `${prefix}/${paste.slug}`;
     info.appendChild(link);
 
     const meta = document.createElement("div");
@@ -36,7 +46,7 @@
     const actions = document.createElement("div");
     actions.className = "paste-actions";
     const editLink = document.createElement("a");
-    editLink.href = `/write?edit=${encodeURIComponent(paste.slug)}`;
+    editLink.href = `${prefix}/write?edit=${encodeURIComponent(paste.slug)}`;
     editLink.className = "edit-link";
     editLink.textContent = "Edit";
     actions.appendChild(editLink);
@@ -64,7 +74,7 @@
       const res = await fetch("/.netlify/functions/delete-paste", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug }),
+        body: JSON.stringify({ slug, workspace: workspace || undefined }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -89,7 +99,8 @@
 
   async function load() {
     try {
-      const res = await fetch("/.netlify/functions/list-pastes");
+      const wsParam = workspace ? `?workspace=${encodeURIComponent(workspace)}` : "";
+      const res = await fetch(`/.netlify/functions/list-pastes${wsParam}`);
       const data = await res.json();
       if (!res.ok) {
         statusEl.textContent = data.message || "Couldn't load notes.";

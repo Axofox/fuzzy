@@ -26,6 +26,35 @@ function copyDir(src, dest) {
   }
 }
 
+// Renders one paste dir if it's actually published (has both meta.json and
+// content.md -- a publish that failed partway never surfaces a broken
+// page). `urlPath` is what the page's footer shows, e.g. "katy/hello" for a
+// workspace-scoped note. Returns true if it rendered something.
+function renderPasteIfPublished(dir, slug, outParentDir, urlPath, template) {
+  const metaPath = path.join(dir, "meta.json");
+  const contentPath = path.join(dir, "content.md");
+  if (!fs.existsSync(metaPath) || !fs.existsSync(contentPath)) return false;
+
+  const markdown = fs.readFileSync(contentPath, "utf8");
+  const html = renderMarkdown(markdown);
+  const title = deriveTitle(markdown);
+
+  const page = template
+    .replace(/{{TITLE}}/g, escapeHtml(title))
+    .replace(/{{CONTENT}}/g, html)
+    .replace(/{{SLUG}}/g, escapeHtml(urlPath));
+
+  const outDir = path.join(outParentDir, slug);
+  fs.mkdirSync(outDir, { recursive: true });
+  fs.writeFileSync(path.join(outDir, "index.html"), page);
+
+  const imagesDir = path.join(dir, "images");
+  if (fs.existsSync(imagesDir)) {
+    copyDir(imagesDir, path.join(outDir, "images"));
+  }
+  return true;
+}
+
 function main() {
   rmrf(PUBLIC_DIR);
   fs.mkdirSync(PUBLIC_DIR, { recursive: true });
@@ -40,35 +69,28 @@ function main() {
   if (fs.existsSync(PASTES_DIR)) {
     for (const entry of fs.readdirSync(PASTES_DIR, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue;
-      const slug = entry.name;
-      const dir = path.join(PASTES_DIR, slug);
-      const metaPath = path.join(dir, "meta.json");
-      const contentPath = path.join(dir, "content.md");
+      const topDir = path.join(PASTES_DIR, entry.name);
 
-      // A paste only counts as published once meta.json has landed, so a
-      // publish that failed partway (e.g. GitHub API error after the
-      // content commit) never surfaces a broken page.
-      if (!fs.existsSync(metaPath) || !fs.existsSync(contentPath)) continue;
-
-      const markdown = fs.readFileSync(contentPath, "utf8");
-      const html = renderMarkdown(markdown);
-      const title = deriveTitle(markdown);
-
-      const page = template
-        .replace(/{{TITLE}}/g, escapeHtml(title))
-        .replace(/{{CONTENT}}/g, html)
-        .replace(/{{SLUG}}/g, escapeHtml(slug));
-
-      const outDir = path.join(PUBLIC_DIR, slug);
-      fs.mkdirSync(outDir, { recursive: true });
-      fs.writeFileSync(path.join(outDir, "index.html"), page);
-
-      const imagesDir = path.join(dir, "images");
-      if (fs.existsSync(imagesDir)) {
-        copyDir(imagesDir, path.join(outDir, "images"));
+      if (fs.existsSync(path.join(topDir, "meta.json"))) {
+        // A default (unscoped) note: pastes/{slug}/meta.json directly.
+        if (renderPasteIfPublished(topDir, entry.name, PUBLIC_DIR, entry.name, template)) {
+          count++;
+        }
+      } else {
+        // No meta.json directly under this dir means it's a workspace
+        // folder (e.g. pastes/katy/), whose own notes are one level deeper:
+        // pastes/{workspace}/{slug}/meta.json.
+        const workspace = entry.name;
+        const workspaceOutDir = path.join(PUBLIC_DIR, workspace);
+        for (const subEntry of fs.readdirSync(topDir, { withFileTypes: true })) {
+          if (!subEntry.isDirectory()) continue;
+          const subDir = path.join(topDir, subEntry.name);
+          const urlPath = `${workspace}/${subEntry.name}`;
+          if (renderPasteIfPublished(subDir, subEntry.name, workspaceOutDir, urlPath, template)) {
+            count++;
+          }
+        }
       }
-
-      count++;
     }
   }
 
