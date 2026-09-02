@@ -13,7 +13,7 @@ We just want to be a pain in the ass for others :D
 - Rally leader: EirikurRaudi
 - Joiners: _____
 
-BLUE — Hold Bell Tower, then Sanctum
+[blue]BLUE — Hold Bell Tower, then Sanctum[/blue]
 - Rally leader: Edy
 - Joiners: _____
 
