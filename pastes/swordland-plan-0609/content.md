@@ -11,15 +11,16 @@ We just want to be a pain in the ass for others :D
 
 [purple]PURPLE — Hold Royal Stables, then Sanctum[/purple]
 - Rally leader: EirikurRaudi
-- Joiners: _____
+-  8 Joiners: [purple]Iliana, Bars, 개미병장, zahra aleskafi, Guess hoo, Nanss,   Luetti, NAMAN, [/purple] 
+ 
 
 [blue]BLUE — Hold Bell Tower, then Sanctum[/blue]
 - Rally leader: Edy
-- Joiners: _____
+-  8 Joiners: [blue]MTM, FearsomeKbab, MICK3006, Mnt, EniViciVokke, TieWaster, TheKing, Seralg, [/blue]
 
 [green]GREEN — Hold Abbeys[/green]
 - Rally leader: Tyson
-- Joiners: _____
+-  8 Joiners: [green]ZETAKIRI, A 7, Gothel Ajus, REIS 34, Silva, CaliaDoris, Zovitsh,  Lord sk, [/green]
 
 ## Hold team rules
 - Joiners, do **NOT** teleport. Stay in the safe zone. Make good use of the free march speeds
