@@ -9,12 +9,12 @@
 Roaming pair. Take a building, break the enemy hold, take the loot, move on. 
 We just want to be a pain in the ass for others :D
 
-[purple]PURPLE [/purple] — Hold Royal Stables, then move on to Sanctum when it openes
+[purple]PURPLE [/purple] — Bell Tower
 - Rally leader: EirikurRaudi
 -  8 Joiners: [purple]Iliana, Bars, 개미병장, Life, Guess hoo, Nanss,   Luetti, NAMAN, [/purple] 
  
 
-[blue]BLUE[/blue]  — Hold Bell Tower, then move on to Sanctum when it openes
+[blue]BLUE[/blue]  — Sanctum
 - Rally leader: Edy
 -  8 Joiners: [blue]MTM, FearsomeKbab, MICK3006, Mnt, EniViciVokke, TieWaster, TheKing, Seralg, [/blue]
 
@@ -23,10 +23,9 @@ We just want to be a pain in the ass for others :D
 -  8 Joiners: [green]Injal, A 7, Gothel Ajus, REIS 34, Silva, CaliaDoris, Zovitsh,  Lord sk, [/green]
 
 ## [blue]Blue[/blue], [green]Green[/green] and [purple]Purple[/purple] team rules
-- Joiners, do **NOT** teleport. Stay in the safe zone. Make good use of the free march speeds
+- Joiners, do **NOT** teleport. Stay in the safe zone. Make good use of the free march speeds 
 - Work in teams always! 
-- Once captured, garrison and stay. Holding 30 minutes increases the point rate.
-- Reinforce your leader immediately after the building has been taken
+- Garrison the building and Reinforce your leader as soon as the rally has been deployed
 - Leaders, communicate clearly and to the point! Express clearly what you need and where you need it. 
 
 ## Joiner hero setup
