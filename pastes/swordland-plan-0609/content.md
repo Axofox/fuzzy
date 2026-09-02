@@ -16,7 +16,7 @@ We just want to be a pain in the ass for others :D
 
 [blue]BLUE[/blue]  — Sanctum
 - Rally leader: Edy
--  8 Joiners: [blue]MTM, FearsomeKbab, MICK3006, Mnt, EniViciVokke, TieWaster, TheKing, Seralg, [/blue]
+-  8 Joiners: [blue]MTM, FearsomeKbab, Fisa, Mnt, EniViciVokke, TieWaster, TheKing, Seralg, [/blue]
 
 [green]GREEN [/green] — Hold Abbey closest to safe zone
 - Rally leader: Tyson
