@@ -42,6 +42,17 @@
   const editSlug = new URLSearchParams(location.search).get("edit");
   const editMode = !!editSlug;
 
+  // Toolbar buttons (bold/italic/color) act on the textarea's current
+  // selection, so they must never actually take focus themselves -- if they
+  // did, the editor.focus() call in wrapSelectionTags/insertAtCursor would
+  // be re-focusing an element that had just lost it, which makes the browser
+  // scroll the page to bring the textarea back into view. Blocking focus at
+  // mousedown (before it happens) keeps focus on the textarea the whole
+  // time, so there's nothing to scroll back to.
+  document.querySelector(".toolbar").addEventListener("mousedown", (e) => {
+    if (e.target.closest("button")) e.preventDefault();
+  });
+
   // ---- selection helpers -------------------------------------------------
 
   function insertAtCursor(text) {
