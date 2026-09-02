@@ -9,16 +9,16 @@
 Roaming pair. Take a building, break the enemy hold, take the loot, move on. 
 We just want to be a pain in the ass for others :D
 
-[purple]PURPLE [/purple] — Hold Royal Stables, then Sanctum
+[purple]PURPLE [/purple] — Hold Royal Stables, then move on to Sanctum when it openes
 - Rally leader: EirikurRaudi
 -  8 Joiners: [purple]Iliana, Bars, 개미병장, Life, Guess hoo, Nanss,   Luetti, NAMAN, [/purple] 
  
 
-[blue]BLUE[/blue]  — Hold Bell Tower, then Sanctum
+[blue]BLUE[/blue]  — Hold Bell Tower, then move on to Sanctum when it openes
 - Rally leader: Edy
 -  8 Joiners: [blue]MTM, FearsomeKbab, MICK3006, Mnt, EniViciVokke, TieWaster, TheKing, Seralg, [/blue]
 
-[green]GREEN [/green] — Hold Abbeys
+[green]GREEN [/green] — Hold Abbeys, then move on to Swordshrine when it openes
 - Rally leader: Tyson
 -  8 Joiners: [green]Injal, A 7, Gothel Ajus, REIS 34, Silva, CaliaDoris, Zovitsh,  Lord sk, [/green]
 
