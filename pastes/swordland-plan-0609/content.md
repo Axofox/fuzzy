@@ -20,7 +20,7 @@ We just want to be a pain in the ass for others :D
 
 [green]GREEN [/green] — Hold Abbey closest to safe zone
 - Rally leader: Tyson
--  8 Joiners: [green]Injal, A 7, Gothel Ajus, REIS 34, Silva, CaliaDoris, Zovitsh,  Lord sk, [/green]
+-  8 Joiners: [green]Injal, A 7, Gothel Ajus, REIS 34, Silva, CaliaDoris, Zovitsh,  Lord sk, Chamykaze [/green]
 
 ## [blue]Blue[/blue], [green]Green[/green] and [purple]Purple[/purple] team rules
 - Joiners, do **NOT** teleport. Stay in the safe zone. Make good use of the free march speeds (2 per each march should be enough) 
