@@ -38,3 +38,5 @@ I know this event is one of the most frustrating, but I hope you see how it can 
 You are of course allowed to be frustrated, but please express your frustration in a constructive way. 
 
 Have fun! 
+
+Suggested link: https://kingshot.fandom.com/wiki/Swordland_Showdown
