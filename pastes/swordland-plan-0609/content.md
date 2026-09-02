@@ -22,7 +22,7 @@ We just want to be a pain in the ass for others :D
 - Rally leader: Tyson
 -  8 Joiners: [green]ZETAKIRI, A 7, Gothel Ajus, REIS 34, Silva, CaliaDoris, Zovitsh,  Lord sk, [/green]
 
-## Hold team rules
+## [blue]Blue[/blue], [green]Green[/green] and [purple]Purple[/purple] team rules
 - Joiners, do **NOT** teleport. Stay in the safe zone. Make good use of the free march speeds
 - Work in teams always! 
 - Once captured, garrison and stay. Holding 30 minutes increases the point rate.
