@@ -16,13 +16,11 @@ You will not have time to arrange heroes once a rally timer is running. Do this 
 **1. Join the rally**
 Lead with **Chenko**. If Chenko is unavailable, use Amane.
 
-**2. Send Garrison — with Howard**
+**2. Reinforce the Leader — with Gordon**
+As soon as Chenko left your city. 
+
+**3. Send Garrison — with Howard**
 Do this the moment the troops leave the leader's base.
-
-**3. Reinforce the Leader — with Gordon**
-Immediately after step 2.
-
-Order matters. The rally has a countdown. Garrison and reinforce do not.
 
 ## The swap
 
@@ -52,7 +50,7 @@ Possible troops ratios:
 | March | Ratio | Why |
 |---|---|---|
 | **Attack join** (Chenko or Amane) | **50 / 20 / 30** | The standard rally split. Enough front line to absorb the first waves, archers as the damage engine, cavalry to reach their back line. |
-| **Garrison** (Howard) | **60 / 20 / 20** | Archers lose their edge defending — low defensive stats. Shift the weight to infantry. |
+| **Garrison** (Howard) | **60 / 40 / 00** | Archers lose their edge defending — low defensive stats. Shift the weight to infantry. |
 | **Reinforce leader** (Gordon) | **60 / 20 / 20** | Same reasoning. You're keeping the leader standing, not maximizing damage. |
 
 Practice :)
