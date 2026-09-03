@@ -103,16 +103,26 @@ roughly 30–90 seconds to go live, not instant.
 
 ## Security note
 
-Neither `/write` nor `/write/manage` has a password, by design (per your
-call). Two things worth knowing:
-
-- Anyone who finds those URLs can publish, edit, or delete notes under your
-  GitHub token's identity. Keep the URLs out of anything public if that
-  matters to you.
-- If you ever want to lock it down without much effort, Netlify's
-  **Visitor access** password-protects the *whole* site, or you can add an
-  [Edge Function](https://docs.netlify.com/edge-functions/overview/) that
-  gates just `/write` behind a shared secret.
+- `/write/manage` (the note history — list, edit, delete) requires a
+  password: `netlify/edge-functions/manage-auth.js` puts real HTTP Basic
+  Auth in front of it. The browser's own login prompt asks for it; the
+  password is only ever compared server-side at Netlify's edge, never sent
+  to a visitor's browser in any JS file. Change it by editing the
+  `PASSWORD` constant in that file and pushing.
+- `/write` itself (writing a *new* note) has **no password**, by design (per
+  your call) — anyone who finds that URL can publish a note under your
+  GitHub token's identity. Keep it out of anything public if that matters.
+- Workspace pages (`/{name}/write`, `/{name}/write/manage`) are **not**
+  covered by the password above — that's deliberate, so you can hand
+  someone a workspace link without also giving them your password. Anyone
+  with a workspace link can publish, edit, or delete *that workspace's*
+  notes.
+- This protects the pages themselves; the Netlify Functions they call
+  (`list-pastes`, `delete-paste`, etc.) aren't separately gated, so someone
+  who already knows a function's exact URL and shape could still call it
+  directly without going through `/write/manage`. Low risk in practice —
+  it's the same "a link is the access control" model the rest of this tool
+  already relies on — but worth knowing.
 
 ## Limits
 
