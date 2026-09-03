@@ -183,36 +183,103 @@
     }
   }
 
-  async function addImageFile(file) {
-    if (!file.type.startsWith("image/")) return;
+  // Reads + compresses one file and works out its final filename, but
+  // doesn't touch the textarea/thumbnails yet -- addImageFiles below decides
+  // how to lay multiple prepared images out before inserting anything.
+  async function prepareImageFile(file) {
+    if (!file.type.startsWith("image/")) return null;
     const originalName = file.name;
     const originalIsPlaceholder = !originalName || originalName === "image.png";
     const compressed = await compressImageFile(file);
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(compressed);
+    });
+    const base64 = dataUrl.split(",")[1];
+    const ext = extFromMime(compressed.type);
+    const base = !originalIsPlaceholder ? sanitizeBaseName(originalName) : "screenshot-" + Date.now();
+    const filename = `${base}.${ext}`;
+    return { filename, dataBase64: base64, dataUrl };
+  }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result;
-      const base64 = dataUrl.split(",")[1];
-      const ext = extFromMime(compressed.type);
-      const base = !originalIsPlaceholder
-        ? sanitizeBaseName(originalName)
-        : "screenshot-" + Date.now();
-      const filename = `${base}.${ext}`;
+  function appendThumb(dataUrl, filename) {
+    const thumb = document.createElement("img");
+    thumb.src = dataUrl;
+    thumb.title = filename;
+    thumbs.appendChild(thumb);
+  }
 
-      state.images.push({ filename, dataBase64: base64 });
-      insertAtCursor(`\n![](images/${filename})\n`);
+  // Two files with the same original name (or two generic "screenshot-..."
+  // ones landing in the same millisecond) would otherwise both produce the
+  // same images/{filename}, silently colliding in the markdown even though
+  // the server would rename the second one on publish to avoid overwriting
+  // the first -- leaving one of the two images broken on the published page.
+  function uniqueFilename(name, usedNames) {
+    if (!usedNames.has(name)) return name;
+    const dot = name.lastIndexOf(".");
+    const stem = dot >= 0 ? name.slice(0, dot) : name;
+    const ext = dot >= 0 ? name.slice(dot) : "";
+    let n = 1;
+    let candidate = `${stem}-${n}${ext}`;
+    while (usedNames.has(candidate)) {
+      n++;
+      candidate = `${stem}-${n}${ext}`;
+    }
+    return candidate;
+  }
 
-      const thumb = document.createElement("img");
-      thumb.src = dataUrl;
-      thumb.title = filename;
-      thumbs.appendChild(thumb);
-    };
-    reader.readAsDataURL(compressed);
+  // Matches main's usable content width (720px max-width, 20px padding each
+  // side) on both the reader page and this page's own preview, so a row
+  // fits without wrapping on a normal-width screen.
+  const ROW_CONTENT_WIDTH = 680;
+  const ROW_GAP = 8;
+
+  function rowImageWidth(count) {
+    const w = Math.floor((ROW_CONTENT_WIDTH - ROW_GAP * (count - 1)) / count);
+    return Math.max(20, Math.min(2000, w));
+  }
+
+  async function addImageFile(file) {
+    const prepared = await prepareImageFile(file);
+    if (!prepared) return;
+    const usedNames = new Set(state.images.map((i) => i.filename));
+    const filename = uniqueFilename(prepared.filename, usedNames);
+    state.images.push({ filename, dataBase64: prepared.dataBase64 });
+    insertAtCursor(`\n![](images/${filename})\n`);
+    appendThumb(prepared.dataUrl, filename);
+  }
+
+  // Selecting/dropping/pasting more than one image at once auto-arranges
+  // them side by side at a size that fits, instead of each one stacking on
+  // its own line -- the common "compare two screenshots" case needs no
+  // manual [alt|width] editing at all this way.
+  async function addImageFiles(fileList) {
+    const files = Array.from(fileList).filter((f) => f.type.startsWith("image/"));
+    if (!files.length) return;
+    if (files.length === 1) {
+      await addImageFile(files[0]);
+      return;
+    }
+    const prepared = (await Promise.all(files.map(prepareImageFile))).filter(Boolean);
+    if (!prepared.length) return;
+    const usedNames = new Set(state.images.map((i) => i.filename));
+    const deduped = prepared.map((p) => {
+      const filename = uniqueFilename(p.filename, usedNames);
+      usedNames.add(filename);
+      return { ...p, filename };
+    });
+    const width = rowImageWidth(deduped.length);
+    for (const p of deduped) state.images.push({ filename: p.filename, dataBase64: p.dataBase64 });
+    const line = deduped.map((p) => `![|${width}](images/${p.filename})`).join(" ");
+    insertAtCursor(`\n${line}\n`);
+    for (const p of deduped) appendThumb(p.dataUrl, p.filename);
   }
 
   btnImage.addEventListener("click", () => fileInput.click());
   fileInput.addEventListener("change", () => {
-    for (const f of fileInput.files) addImageFile(f);
+    addImageFiles(fileInput.files);
     fileInput.value = "";
   });
 
@@ -224,23 +291,23 @@
   editor.addEventListener("drop", (e) => {
     e.preventDefault();
     editor.classList.remove("dragover");
-    for (const f of e.dataTransfer.files) addImageFile(f);
+    addImageFiles(e.dataTransfer.files);
   });
 
   editor.addEventListener("paste", (e) => {
     const items = e.clipboardData && e.clipboardData.items;
     if (!items) return;
-    let handled = false;
+    const files = [];
     for (const item of items) {
       if (item.kind === "file" && item.type.startsWith("image/")) {
         const file = item.getAsFile();
-        if (file) {
-          addImageFile(file);
-          handled = true;
-        }
+        if (file) files.push(file);
       }
     }
-    if (handled) e.preventDefault();
+    if (files.length) {
+      addImageFiles(files);
+      e.preventDefault();
+    }
   });
 
   // ---- write/preview tabs --------------------------------------------------

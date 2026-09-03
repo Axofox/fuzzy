@@ -68,14 +68,20 @@ Only those 5 color names are recognized; anything else (`[orange]...[/orange]`)
 is left as literal text. Markdown inside a color tag still works, e.g.
 `[red]**bold and red**[/red]`.
 
-There's also a size suffix for images: `![alt|300](images/x.png)` renders it
-300px wide (any number 20-2000; out of range gets clamped, not rejected).
-Put two of these on the same line, separated by a space, and they sit side
-by side, wrapping onto a new line on narrow screens:
+Images can also be sized and placed side by side. The easy way: select or
+drop **more than one image at once** (multi-select in the file picker, or
+drag several files together) and they're automatically arranged in a row,
+sized to fit — no typing required. Under the hood that produces:
 
 ```
 ![cat|200](images/cat.png) ![dog|200](images/dog.png)
 ```
+
+— `![alt|300](images/x.png)` sizes a single image to 300px wide (any number
+20-2000; out of range gets clamped, not rejected), and two of these on the
+same line, separated by a space, sit side by side and wrap onto a new line
+on narrow screens. Feel free to hand-edit the width after the fact if the
+auto-picked size isn't quite right.
 
 A lone, unsized image (`![alt](images/x.png)`) still fills its line exactly
 as before.
