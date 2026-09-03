@@ -37,8 +37,24 @@ function applyColorTags(markdown) {
   return out;
 }
 
+// Optional sizing on an image: ![alt|300](images/x.png) -> a 300px-wide
+// <img>. Not standard Markdown, so images with a size are expanded to raw
+// <img> tags (bypassing marked's own image handling) before marked runs.
+// Images stay `display: inline-block` in CSS, so two of these side by side
+// on the same source line (just separated by a space) sit next to each
+// other; one alone still fills its line as before.
+const MIN_IMAGE_WIDTH = 20;
+const MAX_IMAGE_WIDTH = 2000;
+
+function applySizedImages(markdown) {
+  return markdown.replace(/!\[([^\]]*)\|(\d{1,4})\]\(([^)\s]+)\)/g, (_, alt, width, src) => {
+    const w = Math.min(MAX_IMAGE_WIDTH, Math.max(MIN_IMAGE_WIDTH, parseInt(width, 10)));
+    return `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" width="${w}">`;
+  });
+}
+
 function renderMarkdown(markdown) {
-  const rawHtml = marked.parse(applyColorTags(markdown));
+  const rawHtml = marked.parse(applyColorTags(applySizedImages(markdown)));
   return sanitizeHtml(rawHtml, {
     allowedTags: [
       "p", "br", "hr", "b", "strong", "i", "em", "u", "s", "del", "ins",
@@ -48,7 +64,7 @@ function renderMarkdown(markdown) {
     ],
     allowedAttributes: {
       a: ["href", "title", "target", "rel"],
-      img: ["src", "alt", "title"],
+      img: ["src", "alt", "title", "width"],
       td: ["align"],
       th: ["align"],
       span: ["class"],
@@ -64,4 +80,4 @@ function renderMarkdown(markdown) {
   });
 }
 
-module.exports = { escapeHtml, deriveTitle, renderMarkdown, COLOR_NAMES };
+module.exports = { escapeHtml, deriveTitle, renderMarkdown, COLOR_NAMES, applySizedImages };

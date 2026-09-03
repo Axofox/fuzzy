@@ -1,6 +1,6 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
-const { escapeHtml, deriveTitle, renderMarkdown } = require("../scripts/lib/render");
+const { escapeHtml, deriveTitle, renderMarkdown, applySizedImages } = require("../scripts/lib/render");
 
 test("escapeHtml escapes the five reserved HTML characters", () => {
   assert.equal(escapeHtml(`<b>&"'</b>`), "&lt;b&gt;&amp;&quot;&#39;&lt;/b&gt;");
@@ -90,4 +90,39 @@ test("renderMarkdown does not recognize an unknown color name as a tag", () => {
   const html = renderMarkdown("[orange]not a real color[/orange]");
   assert.doesNotMatch(html, /<span/);
   assert.match(html, /\[orange\]not a real color\[\/orange\]/);
+});
+
+test("applySizedImages turns ![alt|width](src) into a sized <img>", () => {
+  const out = applySizedImages("![my shot|300](images/a.png)");
+  assert.match(out, /<img src="images\/a\.png" alt="my shot" width="300">/);
+});
+
+test("applySizedImages clamps width to the 20-2000 range", () => {
+  assert.match(applySizedImages("![x|1](a.png)"), /width="20"/);
+  assert.match(applySizedImages("![x|9999](a.png)"), /width="2000"/);
+});
+
+test("applySizedImages leaves a plain, unsized image untouched", () => {
+  const md = "![alt](images/a.png)";
+  assert.equal(applySizedImages(md), md);
+});
+
+test("applySizedImages escapes alt/src to prevent attribute-breakout injection", () => {
+  const out = applySizedImages('![x" onerror="alert(1)|300](a.png)');
+  // The literal double quote must come out as &quot; -- if it appeared
+  // unescaped, it would close the alt="..." attribute early and let
+  // onerror="..." become a real, executable attribute instead of text.
+  assert.doesNotMatch(out, /alt="[^"]*"[^>]*onerror=/);
+  assert.match(out, /&quot;/);
+});
+
+test("renderMarkdown renders two sized images on one line as siblings in one <p>, ready to sit side by side via CSS", () => {
+  const html = renderMarkdown("![a|200](images/a.png) ![b|200](images/b.png)");
+  assert.match(html, /<p><img src="images\/a\.png" alt="a" width="200"[^>]*>\s*<img src="images\/b\.png" alt="b" width="200"[^>]*><\/p>/);
+});
+
+test("renderMarkdown still renders a plain unsized image exactly as before", () => {
+  const html = renderMarkdown("![a screenshot](images/shot.png)");
+  assert.match(html, /<img src="images\/shot\.png" alt="a screenshot"\s*\/?>/);
+  assert.doesNotMatch(html, /width=/);
 });

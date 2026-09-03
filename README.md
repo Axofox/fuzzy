@@ -68,6 +68,18 @@ Only those 5 color names are recognized; anything else (`[orange]...[/orange]`)
 is left as literal text. Markdown inside a color tag still works, e.g.
 `[red]**bold and red**[/red]`.
 
+There's also a size suffix for images: `![alt|300](images/x.png)` renders it
+300px wide (any number 20-2000; out of range gets clamped, not rejected).
+Put two of these on the same line, separated by a space, and they sit side
+by side, wrapping onto a new line on narrow screens:
+
+```
+![cat|200](images/cat.png) ![dog|200](images/dog.png)
+```
+
+A lone, unsized image (`![alt](images/x.png)`) still fills its line exactly
+as before.
+
 Because publishing goes through a real git commit + rebuild, a new note takes
 roughly 30–90 seconds to go live, not instant.
 
@@ -146,9 +158,10 @@ npm test        # unit tests (Node's built-in test runner, no extra deps)
 ```
 
 Tests cover the pure logic: slug validation/generation, workspace name
-resolution, Markdown rendering + HTML sanitization (including XSS attempts
-and the `[color]` tag syntax), image filename sanitization, the GitHub API
-wrapper (mocked, no real network calls), and the `create-paste` handler's
+resolution, Markdown rendering + HTML sanitization (including XSS attempts,
+the `[color]` tag syntax, and the `![alt|width](src)` image sizing syntax),
+image filename sanitization, the GitHub API wrapper (mocked, no real network
+calls), and the `create-paste` handler's
 create vs. edit (overwrite) logic and workspace scoping (also mocked). They
 don't cover image compression or the rest of the browser-side
 `write.js`/`manage.js` — those are exercised manually via `/write` and
