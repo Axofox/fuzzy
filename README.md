@@ -104,11 +104,12 @@ roughly 30–90 seconds to go live, not instant.
 ## Security note
 
 - `/write/manage` (the note history — list, edit, delete) requires a
-  password: `netlify/edge-functions/manage-auth.js` puts real HTTP Basic
-  Auth in front of it. The browser's own login prompt asks for it; the
-  password is only ever compared server-side at Netlify's edge, never sent
-  to a visitor's browser in any JS file. Change it by editing the
-  `PASSWORD` constant in that file and pushing.
+  password: `netlify/edge-functions/manage-auth.js` shows a custom login
+  page (styled to match the rest of the site) in front of it. The password
+  is only ever compared server-side at Netlify's edge, never sent to a
+  visitor's browser in any JS file. On success it sets an HttpOnly cookie
+  good for 24 hours, after which it asks again. Change the password by
+  editing the `PASSWORD` constant in that file and pushing.
 - `/write` itself (writing a *new* note) has **no password**, by design (per
   your call) — anyone who finds that URL can publish a note under your
   GitHub token's identity. Keep it out of anything public if that matters.
