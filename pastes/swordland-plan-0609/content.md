@@ -2,31 +2,31 @@
 
 **Know your colour before we start.**
 
-[yellow]GOLD — Strike (2 players)[/yellow]
+[yellow]GOLD [/yellow] — Strike
 1. Pebble
 2. TATSAWESUM
 
 Roaming pair. Take a building, break the enemy hold, take the loot, move on. 
 We just want to be a pain in the ass for others :D
 
-[purple]PURPLE — Hold Royal Stables, then Sanctum[/purple]
+[purple]PURPLE [/purple] — Bell Tower
 - Rally leader: EirikurRaudi
-- Joiners: _____
+-  8 Joiners: [purple]Iliana, Bars, 개미병장, Life, Guess hoo, Nanss,   Luetti, NAMAN, [/purple] 
+ 
 
-[blue]BLUE — Hold Bell Tower, then Sanctum[/blue]
+[blue]BLUE[/blue]  — Sanctum
 - Rally leader: Edy
-- Joiners: _____
+-  8 Joiners: [blue]MTM, FearsomeKbab, Fisa, Mnt, EniViciVokke, TieWaster, TheKing, Seralg, [/blue]
 
-[green]GREEN — Hold Abbeys[/green]
+[green]GREEN [/green] — Hold Abbey closest to safe zone
 - Rally leader: Tyson
-- Joiners: _____
+-  8 Joiners: [green]Injal, A 7, Gothel Ajus, REIS 34, Silva, CaliaDoris, Zovitsh,  Lord sk, Chamykaze [/green]
 
-## Hold team rules
-- Joiners, do **NOT** teleport. Stay in the safe zone. Make good use of the free march speeds
+## [blue]Blue[/blue], [green]Green[/green] and [purple]Purple[/purple] team rules
+- Joiners, do **NOT** teleport. Stay in the safe zone. Make good use of the free march speeds (2 per each march should be enough) 
 - Work in teams always! 
-- Once captured, garrison and stay. Holding 30 minutes increases the point rate.
-- Reinforce your leader immediately after the building has been taken
-- Leaders, communicate clearly and to the point! Express clearly what you need and where you need it. 
+- Garrison the building and Reinforce your leader as soon as the rally has been deployed (wait 10 seconds after deployment to send Garrison and Reinforments. Don't forget to recall your inside troops 3 second before you garrison is arriving)
+- Leaders, communicate clearly and to the point! What you need and where you need it, how many do you need. 
 
 ## Joiner hero setup
 Make sure you already have your presets ready. 
