@@ -3,6 +3,9 @@
   const listEl = document.getElementById("list");
   const writeLink = document.getElementById("write-link");
 
+  const COPY_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V5a1 1 0 0 1 1-1h11"/></svg>';
+  const CHECK_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>';
+
   // Same workspace-detection as write.js: /{workspace}/write/manage is
   // rewritten to this page without changing the URL bar.
   const workspaceMatch = location.pathname.match(/^\/([a-z0-9-]+)\/write\/manage\/?$/);
@@ -45,6 +48,18 @@
 
     const actions = document.createElement("div");
     actions.className = "paste-actions";
+    const copyBtn = document.createElement("button");
+    copyBtn.type = "button";
+    copyBtn.className = "copy-link-btn";
+    copyBtn.title = "Copy link";
+    copyBtn.innerHTML = COPY_ICON;
+    copyBtn.addEventListener("click", () => {
+      const url = `${location.origin}${prefix}/${paste.slug}`;
+      navigator.clipboard.writeText(url);
+      copyBtn.innerHTML = CHECK_ICON;
+      setTimeout(() => (copyBtn.innerHTML = COPY_ICON), 1500);
+    });
+    actions.appendChild(copyBtn);
     const editLink = document.createElement("a");
     editLink.href = `${prefix}/write?edit=${encodeURIComponent(paste.slug)}`;
     editLink.className = "edit-link";
