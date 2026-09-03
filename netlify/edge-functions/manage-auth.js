@@ -32,9 +32,9 @@ function loginPage({ error = false, redirectTo = "/write/manage" } = {}) {
 <meta name="robots" content="noindex, nofollow">
 <title>Note history</title>
 <style>
-  :root { color-scheme: light dark; --bg:#ffffff; --fg:#1b1b1f; --muted:#6b7280; --border:#e5e7eb; --panel:#f9fafb; --link:#2563eb; --bad:#dc2626; }
+  :root { color-scheme: light dark; --bg:#ffffff; --fg:#1b1b1f; --muted:#6b7280; --border:#e5e7eb; --panel:#f9fafb; --bad:#dc2626; }
   @media (prefers-color-scheme: dark) {
-    :root { --bg:#14151a; --fg:#e7e7ea; --muted:#9aa0aa; --border:#2a2b32; --panel:#1b1c22; --link:#7db4ff; --bad:#f87171; }
+    :root { --bg:#14151a; --fg:#e7e7ea; --muted:#9aa0aa; --border:#2a2b32; --panel:#1b1c22; --bad:#f87171; }
   }
   * { box-sizing: border-box; }
   body {
@@ -64,18 +64,19 @@ function loginPage({ error = false, redirectTo = "/write/manage" } = {}) {
     margin-bottom: 12px;
     outline: none;
   }
-  input[type="password"]:focus { border-color: var(--link); }
+  input[type="password"]:focus { border-color: var(--fg); }
   button {
     width: 100%;
     padding: 10px 12px;
-    border: none;
+    border: 1px solid var(--fg);
     border-radius: 8px;
-    background: var(--link);
-    color: #fff;
+    background: var(--fg);
+    color: var(--bg);
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
   }
+  button:hover { opacity: 0.85; }
 </style>
 </head>
 <body>
