@@ -2,6 +2,9 @@
   const statusEl = document.getElementById("status");
   const listEl = document.getElementById("list");
   const writeLink = document.getElementById("write-link");
+  const searchInput = document.getElementById("search-input");
+
+  let allPastes = [];
 
   const COPY_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V5a1 1 0 0 1 1-1h11"/></svg>';
   const CHECK_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>';
@@ -100,8 +103,9 @@
         return;
       }
       row.remove();
+      allPastes = allPastes.filter((p) => p.slug !== slug);
       if (!listEl.children.length) {
-        statusEl.textContent = "No notes published yet.";
+        statusEl.textContent = searchInput.value.trim() ? "No notes match your search." : "No notes published yet.";
         statusEl.classList.remove("hidden");
       }
     } catch (err) {
@@ -111,6 +115,27 @@
       row.classList.remove("removing");
     }
   }
+
+  function renderList(pastes) {
+    listEl.innerHTML = "";
+    for (const paste of pastes) {
+      listEl.appendChild(renderRow(paste));
+    }
+  }
+
+  function applySearch() {
+    const q = searchInput.value.trim().toLowerCase();
+    const filtered = q ? allPastes.filter((p) => p.slug.toLowerCase().includes(q)) : allPastes;
+    renderList(filtered);
+    if (!filtered.length) {
+      statusEl.textContent = q ? "No notes match your search." : "No notes published yet.";
+      statusEl.classList.remove("hidden");
+    } else {
+      statusEl.classList.add("hidden");
+    }
+  }
+
+  searchInput.addEventListener("input", applySearch);
 
   async function load() {
     try {
@@ -125,10 +150,10 @@
         statusEl.textContent = "No notes published yet.";
         return;
       }
+      allPastes = data.pastes;
+      searchInput.hidden = false;
       statusEl.classList.add("hidden");
-      for (const paste of data.pastes) {
-        listEl.appendChild(renderRow(paste));
-      }
+      renderList(allPastes);
     } catch (err) {
       statusEl.textContent = "Network error: " + err.message;
     }

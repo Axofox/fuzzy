@@ -1,3 +1,18 @@
+.search-input {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--fg);
+  font-size: 14px;
+  outline: none;
+}
+.search-input:focus { border-color: var(--fg); }
+.search-input::placeholder { color: var(--muted); }
+
 .paste-list {
   list-style: none;
   margin: 0;
