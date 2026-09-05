@@ -25,3 +25,8 @@ their skills are ignored.
 | **Only this hero's skill applies** | Capacity only | Capacity only |
 | **Yeonwoo**<br>![\|221](images/image-1.webp) | **Edwin**<br>![\|221](images/image-14.webp) | **Forest**<br>![\|221](images/image-16.webp) |
 
+### Setup Example 4 — Troops Only, No Hero
+| Slot 1 — Lead | Slot 2 | Slot 3 |
+|---|---|---|
+| **No skill — troops only** | Capacity only | Capacity only |
+| *(no hero assigned)* | *(no hero assigned)* | *(no hero assigned)* |
