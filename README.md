@@ -145,7 +145,9 @@ roughly 30–90 seconds to go live, not instant.
 
 ## Limits
 
-- ~200,000 characters of Markdown per note.
+- ~200,000 characters of Markdown per note. A live counter under the editor
+  tracks this (blank lines don't count toward it) — it's just a heads-up,
+  the server is what actually enforces the limit.
 - Up to 12 images per note, 3MB each, 4MB combined (keeps requests under
   Netlify's function payload limit) — measured *after* client-side
   compression, so most screenshots have a lot of headroom. PNG, JPG, GIF,

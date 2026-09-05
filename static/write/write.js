@@ -21,6 +21,7 @@
   const previewPane = document.getElementById("preview-pane");
   const heading = document.querySelector("h1");
   const manageLink = document.getElementById("manage-link");
+  const charCount = document.getElementById("char-count");
 
   // A workspace is an optional "/{name}" prefix (e.g. /katy/write) that
   // keeps a separate set of notes, with its own manage page, isolated from
@@ -53,6 +54,27 @@
     if (e.target.closest("button")) e.preventDefault();
   });
 
+  // ---- character counter ---------------------------------------------------
+  // Matches MAX_MARKDOWN_CHARS in create-paste.js/preview.js -- just for the
+  // on-screen hint, the server is what actually enforces it.
+  const MAX_MARKDOWN_CHARS = 200_000;
+
+  function countChars(text) {
+    return text
+      .split(/\r?\n/)
+      .filter((line) => line.trim() !== "")
+      .reduce((sum, line) => sum + line.length, 0);
+  }
+
+  function updateCharCount() {
+    const count = countChars(editor.value);
+    charCount.textContent = `${count.toLocaleString()} / ${MAX_MARKDOWN_CHARS.toLocaleString()} characters`;
+    charCount.classList.toggle("near-limit", count > MAX_MARKDOWN_CHARS * 0.9);
+  }
+
+  editor.addEventListener("input", updateCharCount);
+  updateCharCount();
+
   // ---- selection helpers -------------------------------------------------
 
   function insertAtCursor(text) {
@@ -62,6 +84,7 @@
     const pos = start + text.length;
     editor.setSelectionRange(pos, pos);
     editor.focus();
+    updateCharCount();
   }
 
   function wrapSelectionTags(open, close) {
@@ -73,6 +96,7 @@
     editor.value = before + open + selected + close + after;
     editor.focus();
     editor.setSelectionRange(start + open.length, start + open.length + selected.length);
+    updateCharCount();
   }
 
   function wrapSelection(marker) {
@@ -528,6 +552,7 @@
         return;
       }
       editor.value = data.markdown;
+      updateCharCount();
     } catch (err) {
       editor.value = "";
       showError("Network error: " + err.message);

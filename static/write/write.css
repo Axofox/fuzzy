@@ -208,7 +208,16 @@ textarea#editor {
 }
 textarea#editor.dragover { border-color: var(--link); }
 
-.hint { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
+.editor-footer {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+}
+.hint { color: var(--muted); font-size: 13px; margin: 0; }
+.char-count { color: var(--muted); font-size: 12px; white-space: nowrap; flex-shrink: 0; }
+.char-count.near-limit { color: var(--bad); }
 
 .thumbs {
   display: flex;
