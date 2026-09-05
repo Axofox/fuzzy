@@ -87,3 +87,11 @@
 .delete-btn:hover { background: var(--bad); color: #fff; }
 .delete-btn:disabled { opacity: 0.5; cursor: default; }
 .paste-row.removing { opacity: 0.4; }
+
+/* Below this width, always stack info above actions instead of relying on
+   flex-wrap -- whether a long slug happened to push the buttons onto their
+   own line was inconsistent from row to row otherwise. */
+@media (max-width: 480px) {
+  .paste-row { flex-direction: column; align-items: stretch; }
+  .paste-actions { justify-content: flex-end; }
+}
